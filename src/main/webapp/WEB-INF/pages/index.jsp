@@ -3,6 +3,6 @@
     <title>Main page</title>
   </head>
   <body>
-    Kotlin web-demo chat
+    ${content}
   </body>
 </html>
