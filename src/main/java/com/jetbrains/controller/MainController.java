@@ -10,8 +10,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import com.jetbrains.utils.UrlString;
+
 @Controller
 public class MainController {
+    private ModelAndView oAuthError() {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("oauth/fail");
+        return modelAndView;
+    }
+
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ModelAndView main() {
         ModelAndView modelAndView = new ModelAndView();
@@ -27,19 +35,20 @@ public class MainController {
     }
 
     @RequestMapping(value = "/oauth2callback", method = RequestMethod.GET)
-    public ModelAndView login(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        StringBuffer fullUrlBuf = request.getRequestURL();
-        if (request.getQueryString() != null) {
-            fullUrlBuf.append('?').append(request.getQueryString());
-        }
+    public ModelAndView login(HttpServletRequest request) throws IOException {
+        String requestUrl = UrlString.getFullUrl(request);
         // Валидируем строку запроса на наличие code.
-        if (!GoogleOAuth.codeValidate(fullUrlBuf.toString())) {
+        if (!GoogleOAuth.codeValidate(requestUrl)) {
             ModelAndView modelAndView = new ModelAndView();
             modelAndView.setViewName("oauth/fail");
             return modelAndView;
-        } else {
-
-            return null;
         }
+        String requestBaseUrl = UrlString.getBaseUrl(request);
+        String code = request.getParameter("code");
+        String token = GoogleOAuth.requestAccessToken(requestBaseUrl, code);
+        if (token == null) {
+            return oAuthError();
+        }
+        return null;
     }
 }
