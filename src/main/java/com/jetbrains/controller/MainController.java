@@ -25,4 +25,21 @@ public class MainController {
         String url = GoogleOAuth.generateAuthorizeUrl(request.getRequestURL().toString());
         response.sendRedirect(url);
     }
+
+    @RequestMapping(value = "/oauth2callback", method = RequestMethod.GET)
+    public ModelAndView login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        StringBuffer fullUrlBuf = request.getRequestURL();
+        if (request.getQueryString() != null) {
+            fullUrlBuf.append('?').append(request.getQueryString());
+        }
+        // Валидируем строку запроса на наличие code.
+        if (!GoogleOAuth.codeValidate(fullUrlBuf.toString())) {
+            ModelAndView modelAndView = new ModelAndView();
+            modelAndView.setViewName("oauth/fail");
+            return modelAndView;
+        } else {
+
+            return null;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.jetbrains.service;
 
+import com.google.api.client.auth.oauth2.AuthorizationCodeResponseUrl;
 import com.google.api.client.auth.oauth2.BrowserClientRequestUrl;
 import com.google.api.client.http.GenericUrl;
 
@@ -34,6 +35,20 @@ public class GoogleOAuth {
     };
 
     /**
+     * Генерация redirect URI для последующей вставки в authorize URL
+     * (для перенаправления пользователя обратно после подтверждения доступа).
+     *
+     * @param requestUrl Адрес запрошенной страницы (для включения в redirect URI).
+     *
+     * @return redirect URI.
+     */
+    private static String getRedirectUri(String requestUrl) {
+        GenericUrl url = new GenericUrl(requestUrl);
+        url.setRawPath(GoogleOAuth.REDIRECT_URI);
+        return url.build();
+    }
+
+    /**
      * Генерация URL для редиректа на страницу авторизации через Google account.
      *
      * @param requestUrl Адрес запрошенной страницы (для дальнейшего включения в redirect URI).
@@ -48,16 +63,14 @@ public class GoogleOAuth {
     }
 
     /**
-     * Генерация redirect URI для последующей вставки в authorize URL
-     * (для перенаправления пользователя обратно после подтверждения доступа).
+     * Генерация URL для редиректа на страницу авторизации через Google account.
      *
-     * @param requestUrl Адрес запрошенной страницы (для включения в redirect URI).
+     * @param requestUrl Адрес запрошенной страницы (для дальнейшего включения в redirect URI).
      *
-     * @return redirect URI.
+     * @return Конечный URL для перенаправления на авторизацию через Google account.
      */
-    private static String getRedirectUri(String requestUrl) {
-        GenericUrl url = new GenericUrl(requestUrl);
-        url.setRawPath(GoogleOAuth.REDIRECT_URI);
-        return url.build();
+    public static boolean codeValidate(String requestUrl) {
+        AuthorizationCodeResponseUrl authResponse = new AuthorizationCodeResponseUrl(requestUrl);
+        return authResponse.getError() == null;
     }
 }
