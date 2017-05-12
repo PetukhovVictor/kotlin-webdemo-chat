@@ -1,10 +1,13 @@
 package com.jetbrains.service;
 
 import com.google.api.client.auth.oauth2.*;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.BasicAuthentication;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.oauth2.Oauth2;
+import com.google.api.services.oauth2.model.Userinfoplus;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -107,5 +110,12 @@ public class GoogleOAuth {
         } catch (TokenResponseException e) {
             return null;
         }
+    }
+
+    public static Userinfoplus getUserInfo(String token) throws IOException {
+        GoogleCredential credential = new GoogleCredential().setAccessToken(token);
+        Oauth2 oauth2 = new Oauth2.Builder(new NetHttpTransport(), new JacksonFactory(), credential)
+            .setApplicationName("Oauth2").build();
+        return oauth2.userinfo().get().execute();
     }
 }

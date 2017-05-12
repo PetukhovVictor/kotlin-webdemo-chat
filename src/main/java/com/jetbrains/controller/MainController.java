@@ -1,5 +1,6 @@
 package com.jetbrains.controller;
 
+import com.google.api.services.oauth2.model.Userinfoplus;
 import com.jetbrains.service.GoogleOAuth;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,9 +40,7 @@ public class MainController {
         String requestUrl = UrlString.getFullUrl(request);
         // Валидируем строку запроса на наличие code.
         if (!GoogleOAuth.codeValidate(requestUrl)) {
-            ModelAndView modelAndView = new ModelAndView();
-            modelAndView.setViewName("oauth/fail");
-            return modelAndView;
+            return oAuthError();
         }
         String requestBaseUrl = UrlString.getBaseUrl(request);
         String code = request.getParameter("code");
@@ -49,6 +48,8 @@ public class MainController {
         if (token == null) {
             return oAuthError();
         }
+        Userinfoplus userInfo = GoogleOAuth.getUserInfo(token);
+
         return null;
     }
 }
