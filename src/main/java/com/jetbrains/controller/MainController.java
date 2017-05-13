@@ -1,6 +1,7 @@
 package com.jetbrains.controller;
 
 import com.google.api.services.oauth2.model.Userinfoplus;
+import com.jetbrains.model.UsersEntity;
 import com.jetbrains.service.GoogleOAuth;
 import com.jetbrains.service.User;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 import com.jetbrains.utils.UrlString;
@@ -23,9 +25,12 @@ public class MainController {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public ModelAndView main() {
+    public ModelAndView main(HttpServletRequest request) {
+        User user = new User();
+        UsersEntity userInfo = user.getUserBySession(request.getSession());
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("content", "Kotlin web-demo chat");
+        modelAndView.addObject("user", userInfo);
         modelAndView.setViewName("index");
         return modelAndView;
     }
@@ -36,8 +41,21 @@ public class MainController {
         response.sendRedirect(url);
     }
 
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        User user = new User();
+        UsersEntity userInfo = user.getUserBySession(session);
+        if (userInfo == null) {
+            response.sendRedirect("/");
+            return;
+        }
+        user.logout(session);
+        response.sendRedirect("/");
+    }
+
     @RequestMapping(value = "/oauth2callback", method = RequestMethod.GET)
-    public ModelAndView login(HttpServletRequest request) throws IOException {
+    public ModelAndView login(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String requestUrl = UrlString.getFullUrl(request);
         // Валидируем строку запроса на наличие code.
         if (!GoogleOAuth.codeValidate(requestUrl)) {
@@ -51,7 +69,8 @@ public class MainController {
         }
         Userinfoplus userInfo = GoogleOAuth.getUserInfo(token);
         User user = new User();
-        user.sign(userInfo, request);
+        user.sign(userInfo, request.getSession());
+        response.sendRedirect("/");
         return null;
     }
 }

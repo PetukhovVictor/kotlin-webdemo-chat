@@ -8,7 +8,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Restrictions;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 public class User {
@@ -19,18 +18,26 @@ public class User {
         this.session = sessions.openSession();
     }
 
-    private UsersEntity getUser(String uniqueColumn, Object value) {
+    private UsersEntity getUserByColumn(String uniqueColumn, Object value) {
         Criteria userCriteria = this.session.createCriteria(UsersEntity.class);
         userCriteria.add(Restrictions.eq(uniqueColumn, value));
         return (UsersEntity) userCriteria.uniqueResult();
     }
 
-    private UsersEntity getUserByGid(String gid) {
-        return this.getUser("gid", gid);
+    public UsersEntity getUserByGid(String gid) {
+        return this.getUserByColumn("gid", gid);
     }
 
-    private UsersEntity getUserById(int id) {
-        return this.getUser("id", id);
+    public UsersEntity getUserById(int id) {
+        return this.getUserByColumn("id", id);
+    }
+
+    public UsersEntity getUserBySession(HttpSession session) {
+        return (UsersEntity) session.getAttribute("user");
+    }
+
+    public void logout(HttpSession session) {
+        session.removeAttribute("user");
     }
 
     private void signUp(Userinfoplus userInfo) {
@@ -47,18 +54,17 @@ public class User {
         this.session.getTransaction().commit();
     }
 
-    private void signIn(UsersEntity user, HttpServletRequest request) {
-        HttpSession session = request.getSession();
+    private void signIn(UsersEntity user, HttpSession session) {
         session.setAttribute("user", user);
     }
 
-    public void sign(Userinfoplus userInfo, HttpServletRequest request) {
+    public void sign(Userinfoplus userInfo, HttpSession session) {
         String gid = userInfo.getId();
         UsersEntity user = this.getUserByGid(gid);
         if (user == null) {
             this.signUp(userInfo);
             user = this.getUserByGid(gid);
         }
-        this.signIn(user, request);
+        this.signIn(user, session);
     }
 }
