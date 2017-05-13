@@ -2,6 +2,7 @@ package com.jetbrains.controller;
 
 import com.google.api.services.oauth2.model.Userinfoplus;
 import com.jetbrains.service.GoogleOAuth;
+import com.jetbrains.service.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -49,7 +50,8 @@ public class MainController {
             return oAuthError();
         }
         Userinfoplus userInfo = GoogleOAuth.getUserInfo(token);
-
+        User user = new User();
+        user.sign(userInfo);
         return null;
     }
 }

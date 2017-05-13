@@ -9,6 +9,7 @@ public class UsersEntity {
     private String email;
     private String name;
     private String picture;
+    private String gid;
 
     @Id
     @Column(name = "id")
@@ -72,5 +73,15 @@ public class UsersEntity {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (picture != null ? picture.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "gid")
+    public String getGid() {
+        return gid;
+    }
+
+    public void setGid(String gid) {
+        this.gid = gid;
     }
 }

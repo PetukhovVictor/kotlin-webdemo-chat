@@ -5,10 +5,12 @@
 <hibernate-configuration>
   <session-factory>
     <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
-    <property name="connection.url">jdbc:mysql://localhost:3306/javastudy</property>
+    <property name="connection.url">jdbc:mysql://localhost:3306/kotlin_webdemo</property>
     <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
 
     <property name="connection.username">kotlin_webdemo</property>
     <property name="connection.password">password</property>
+
+    <mapping class="com.jetbrains.model.UsersEntity" />
   </session-factory>
 </hibernate-configuration>
