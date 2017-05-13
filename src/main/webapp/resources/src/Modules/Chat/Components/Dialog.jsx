@@ -11,7 +11,7 @@ export const Dialog = React.createClass({
     render () {
         return (
             <div className="dialog">
-                dialog...
+                <div className="dialog-empty">Для начала переписки выберите диалог или <a href="">создайте новый</a>.</div>
             </div>
         );
     }

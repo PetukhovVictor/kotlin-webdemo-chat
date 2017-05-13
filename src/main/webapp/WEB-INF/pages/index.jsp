@@ -12,7 +12,8 @@
     <body>
         <c:choose>
             <c:when test="${user != null}">
-                <div class="chat-container"></div>
+                <div id="chat-container"></div>
+                <script type="text/javascript" src="${frontendPath}main.js"></script>
             </c:when>
             <c:otherwise>
                 <div class="login-block">

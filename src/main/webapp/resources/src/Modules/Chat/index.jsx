@@ -1,4 +1,5 @@
 import * as React from 'react';
+import PropTypes from 'prop-types';
 
 import {ChatServices} from './Services';
 import {Dialog} from './Components/Dialog';
@@ -48,9 +49,10 @@ export const Chat = React.createClass({
         return (
             <div className="chat">
                 <div className="dialogs">
+                    <h1>Диалоги</h1>
                     {
                         isLoading ?
-                            <div className="dialogs-loading" /> :
+                            <div className="dialogs-loading">Загрузка...</div> :
                             "dialogs..."
                     }
                 </div>

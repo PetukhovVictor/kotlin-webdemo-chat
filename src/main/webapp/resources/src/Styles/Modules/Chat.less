@@ -1,0 +1,49 @@
+@chat-width: 800px;
+@chat-height: 500px;
+@chat-dialogs-width: 220px;
+@chat-dialog-left-offset: 20px;
+
+.chat {
+  width: @chat-width;
+  height: @chat-height;
+  position: absolute;
+  left: 50%;
+  margin: 20px 0 20px -@chat-width/2;
+
+  .dialogs {
+    background: #fff;
+    width: @chat-dialogs-width;
+    height: 100%;
+    float: left;
+    border: 1px solid #eee;
+    border-radius: 2px;
+    box-sizing: border-box;
+
+    h1 {
+      margin-left: 15px;
+    }
+
+    .dialogs-loading {
+      margin-top: @chat-height/2 - 50;
+      font-size: 13px;
+      text-align: center;
+    }
+  }
+
+  .dialog {
+    background: #fff;
+    width: @chat-width - @chat-dialogs-width - @chat-dialog-left-offset;
+    margin-left: @chat-dialog-left-offset;
+    height: 100%;
+    float: left;
+    border: 1px solid #eee;
+    border-radius: 2px;
+    box-sizing: border-box;
+
+    .dialog-empty {
+      margin-top: @chat-height/2 - 50;
+      font-size: 13px;
+      text-align: center;
+    }
+  }
+}
