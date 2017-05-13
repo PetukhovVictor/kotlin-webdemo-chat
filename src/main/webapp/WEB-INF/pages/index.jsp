@@ -7,25 +7,19 @@
         <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Main page</title>
-        <link rel="stylesheet" href="${frontendPath}app.css" />
-        <c:choose>
-            <c:when test="${user != null}"><link rel="stylesheet" href="${frontendPath}app.css" /><</c:when>
-            <c:otherwise><link rel="stylesheet" href="${frontendPath}login.css" /></c:otherwise>
-        </c:choose>
+        <link rel="stylesheet" href="${frontendPath}main.css" />
     </head>
     <body>
         <c:choose>
             <c:when test="${user != null}">
-                <p>Привет, ${user.name}</p>
-                <p><a href="/logout">Выйти</a></p>
+                <div class="chat-container"></div>
             </c:when>
             <c:otherwise>
                 <div class="login-block">
                     <div class="login-description">Добро пожаловать в Kotlin web-demo!</div>
-                    <p><a href="/authorize" title="Войти через Google">Войти через Google</a></p>
+                    <a href="/authorize" class="login-link">Войти через Google</a>
                 </div>
             </c:otherwise>
         </c:choose>
-        <p>${content}</p>
     </body>
 </html>

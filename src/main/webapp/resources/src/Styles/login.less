@@ -1,0 +1,33 @@
+@login-block-width: 400px;
+@login-block-height: 150px;
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100%;
+}
+
+.login-block {
+  font-family: 'OpenSans Light';
+  width: @login-block-width;
+  height: @login-block-height;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -@login-block-width/2;
+  margin-top: -@login-block-height/2;
+  text-align: center;
+
+  .login-description {
+    font-size: 20px;
+  }
+
+  .login-link {
+    font-size: 14px;
+    font-family: 'OpenSans';
+    margin-top: 30px;
+    display: inline-block;
+  }
+}

@@ -7,7 +7,7 @@ require('Styles/login.less');
 window.addEventListener('load', () => {
     const chatComponent = React.createElement();
 
-    // Запуск рендеринга компонента для демонстрации древовидного списка.
+    // Запуск рендеринга компонента чата.
     ReactDOM.render(
         chatComponent,
         document.getElementById('chat-container')
