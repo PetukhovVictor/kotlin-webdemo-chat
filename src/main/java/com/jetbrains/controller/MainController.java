@@ -31,6 +31,7 @@ public class MainController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("content", "Kotlin web-demo chat");
         modelAndView.addObject("user", userInfo);
+        modelAndView.addObject("frontendPath", "http://localhost:8081/assets/");
         modelAndView.setViewName("index");
         return modelAndView;
     }
