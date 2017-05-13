@@ -51,7 +51,7 @@ public class MainController {
         }
         Userinfoplus userInfo = GoogleOAuth.getUserInfo(token);
         User user = new User();
-        user.sign(userInfo);
+        user.sign(userInfo, request);
         return null;
     }
 }
