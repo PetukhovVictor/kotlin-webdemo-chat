@@ -9,8 +9,9 @@
     <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
 
     <property name="connection.username">kotlin_webdemo</property>
-    <property name="connection.password">password</property>
+    <property name="connection.password">eU8x4862</property>
 
     <mapping class="com.jetbrains.model.UsersEntity" />
+
   </session-factory>
 </hibernate-configuration>
