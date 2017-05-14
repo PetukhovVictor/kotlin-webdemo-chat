@@ -28,6 +28,39 @@
       font-size: 13px;
       text-align: center;
     }
+
+    .dialog-item {
+      height: 50px;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background .5s ease;
+
+      .dialog-user-picture {
+        float: left;
+
+        img {
+          max-width: 50px;
+          max-height: 50px;
+          border-radius: 25px;
+        }
+      }
+
+      .dialog-user-name {
+        float: left;
+        vertical-align: middle;
+        line-height: 50px;
+        margin-left: 10px;
+        font-size: 14px;
+      }
+    }
+
+    .dialog-item:hover {
+      background: #eee;
+    }
+
+    .dialog-item-active {
+      background: #eee;
+    }
   }
 
   .dialog {
@@ -41,6 +74,12 @@
     box-sizing: border-box;
 
     .dialog-empty {
+      margin-top: @chat-height/2 - 50;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .dialog-loading {
       margin-top: @chat-height/2 - 50;
       font-size: 13px;
       text-align: center;
