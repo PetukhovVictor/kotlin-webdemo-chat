@@ -49,7 +49,6 @@ export const Chat = React.createClass({
         return (
             <div className="chat">
                 <div className="dialogs">
-                    <h1>Диалоги</h1>
                     {
                         isLoading ?
                             <div className="dialogs-loading">Загрузка...</div> :
