@@ -17,6 +17,7 @@ public class DialogsEntity {
     private Timestamp lastUpdateDate;
     private int ownerId;
     private Set<UsersEntity> participants;
+    private Set<DialogMessagesEntity> messages;
 
     @Id
     @Column(name = "id")
@@ -105,5 +106,14 @@ public class DialogsEntity {
     )
     public Set<UsersEntity> getParticipants() {
         return this.participants;
+    }
+
+    public void setMessages(Set<DialogMessagesEntity> messages) {
+        this.messages = messages;
+    }
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "dialogId")
+    public Set<DialogMessagesEntity> getMessages() {
+        return this.messages;
     }
 }

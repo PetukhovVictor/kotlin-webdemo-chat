@@ -2,6 +2,7 @@ package com.jetbrains.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jetbrains.model.DialogMessagesEntity;
 import com.jetbrains.model.DialogsEntity;
 import com.jetbrains.model.UsersEntity;
 import com.jetbrains.service.Dialog;
@@ -22,5 +23,24 @@ public class DialogController {
         UsersEntity user = (new User()).getUserBySession(request.getSession());
         Set<DialogsEntity> dialogs = (new Dialog()).getDialogs(user);
         return mapper.writeValueAsString(dialogs);
+    }
+
+    @RequestMapping(value = "/rest/dialog/messages", method = RequestMethod.POST)
+    public String dialogMessages(HttpServletRequest request) throws JsonProcessingException {
+        String dialogIdString = request.getParameter("dialogId");
+        if (dialogIdString == null) {
+            return null;
+        }
+        int dialogId;
+        try {
+            dialogId = Integer.parseInt(dialogIdString);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        Dialog dialogService = new Dialog();
+        DialogsEntity dialog = dialogService.getDialogById(dialogId);
+        Set<DialogMessagesEntity> messages = dialogService.getMessages(dialog);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(messages);
     }
 }
