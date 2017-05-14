@@ -1,15 +1,22 @@
 package com.jetbrains.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 @Table(name = "dialogs", schema = "kotlin_webdemo", catalog = "")
 public class DialogsEntity {
     private int id;
     private Timestamp creationDate;
     private String title;
     private Timestamp lastUpdateDate;
+    private int ownerId;
+    private Set<UsersEntity> participants;
 
     @Id
     @Column(name = "id")
@@ -74,5 +81,29 @@ public class DialogsEntity {
         result = 31 * result + (title != null ? title.hashCode() : 0);
         result = 31 * result + (lastUpdateDate != null ? lastUpdateDate.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "owner_id")
+    public int getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(int ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public void setParticipants(Set<UsersEntity> participants) {
+        this.participants = participants;
+    }
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "dialog_participants",
+            joinColumns = @JoinColumn(name = "dialog_id"),
+            inverseJoinColumns = @JoinColumn(name = "participant_id")
+    )
+    public Set<UsersEntity> getParticipants() {
+        return this.participants;
     }
 }

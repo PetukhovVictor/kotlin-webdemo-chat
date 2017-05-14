@@ -9,6 +9,8 @@ public class DialogMessagesEntity {
     private int id;
     private String message;
     private Timestamp date;
+    private int dialogId;
+    private int authorId;
 
     @Id
     @Column(name = "id")
@@ -60,5 +62,25 @@ public class DialogMessagesEntity {
         result = 31 * result + (message != null ? message.hashCode() : 0);
         result = 31 * result + (date != null ? date.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "dialog_id")
+    public int getDialogId() {
+        return dialogId;
+    }
+
+    public void setDialogId(int dialogId) {
+        this.dialogId = dialogId;
+    }
+
+    @Basic
+    @Column(name = "author_id")
+    public int getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(int authorId) {
+        this.authorId = authorId;
     }
 }

@@ -36,6 +36,10 @@ public class User {
         return (UsersEntity) session.getAttribute("user");
     }
 
+    private boolean isLogged(HttpSession session) {
+        return session.getAttribute("user") != null;
+    }
+
     public void logout(HttpSession session) {
         session.removeAttribute("user");
     }
@@ -54,8 +58,10 @@ public class User {
         this.session.getTransaction().commit();
     }
 
-    private void signIn(UsersEntity user, HttpSession session) {
-        session.setAttribute("user", user);
+    public void signIn(UsersEntity user, HttpSession session) {
+        if (!this.isLogged(session)) {
+            session.setAttribute("user", user);
+        }
     }
 
     public void sign(Userinfoplus userInfo, HttpSession session) {

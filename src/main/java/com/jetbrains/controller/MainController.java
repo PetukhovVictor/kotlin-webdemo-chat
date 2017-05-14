@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-import com.jetbrains.utils.UrlString;
+import com.jetbrains.util.UrlString;
 
 @Controller
 public class MainController {

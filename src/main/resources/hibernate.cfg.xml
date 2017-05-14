@@ -12,6 +12,8 @@
     <property name="connection.password">eU8x4862</property>
 
     <mapping class="com.jetbrains.model.UsersEntity" />
+    <mapping class="com.jetbrains.model.DialogsEntity" />
+    <mapping class="com.jetbrains.model.DialogMessagesEntity" />
 
   </session-factory>
 </hibernate-configuration>

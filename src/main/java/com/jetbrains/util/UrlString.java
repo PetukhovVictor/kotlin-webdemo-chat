@@ -1,4 +1,4 @@
-package com.jetbrains.utils;
+package com.jetbrains.util;
 
 import javax.servlet.http.HttpServletRequest;
 

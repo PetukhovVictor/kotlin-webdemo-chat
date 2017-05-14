@@ -1,8 +1,13 @@
 package com.jetbrains.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 @Table(name = "users", schema = "kotlin_webdemo", catalog = "")
 public class UsersEntity {
     private int id;
@@ -10,6 +15,7 @@ public class UsersEntity {
     private String name;
     private String picture;
     private String gid;
+    private Set<DialogsEntity> dialogs;
 
     @Id
     @Column(name = "id")
@@ -83,5 +89,19 @@ public class UsersEntity {
 
     public void setGid(String gid) {
         this.gid = gid;
+    }
+
+    public void setDialogs(Set<DialogsEntity> dialogs) {
+        this.dialogs = dialogs;
+    }
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "dialog_participants",
+            joinColumns = @JoinColumn(name = "participant_id"),
+            inverseJoinColumns = @JoinColumn(name = "dialog_id")
+    )
+    public Set<DialogsEntity> getDialogs() {
+        return this.dialogs;
     }
 }
