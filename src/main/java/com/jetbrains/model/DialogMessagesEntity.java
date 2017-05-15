@@ -10,7 +10,7 @@ public class DialogMessagesEntity {
     private String message;
     private Timestamp date;
     private int dialogId;
-    private int authorId;
+    private UsersEntity author;
 
     @Id
     @Column(name = "id")
@@ -74,13 +74,13 @@ public class DialogMessagesEntity {
         this.dialogId = dialogId;
     }
 
-    @Basic
-    @Column(name = "author_id")
-    public int getAuthorId() {
-        return authorId;
+    public void setAuthor(UsersEntity author) {
+        this.author = author;
     }
 
-    public void setAuthorId(int authorId) {
-        this.authorId = authorId;
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    public UsersEntity getAuthor() {
+        return this.author;
     }
 }

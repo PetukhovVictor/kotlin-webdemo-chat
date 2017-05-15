@@ -9,14 +9,21 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Restrictions;
 
+import java.util.List;
 import java.util.Set;
 
 public class Dialog {
     private Session session;
+    private SessionFactory sessionsFactory;
 
     public Dialog() {
-        SessionFactory sessions = new Configuration().configure().buildSessionFactory();
-        this.session = sessions.openSession();
+        this.sessionsFactory = new Configuration().configure().buildSessionFactory();
+        this.session = this.sessionsFactory.openSession();
+    }
+
+    protected void finalize() {
+        this.session.close();
+        this.sessionsFactory.close();
     }
 
     public Set<DialogsEntity> getDialogs(UsersEntity user) {

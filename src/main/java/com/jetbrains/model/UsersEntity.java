@@ -1,13 +1,11 @@
 package com.jetbrains.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 @Table(name = "users", schema = "kotlin_webdemo", catalog = "")
 public class UsersEntity {
     private int id;
@@ -95,6 +93,7 @@ public class UsersEntity {
         this.dialogs = dialogs;
     }
 
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "dialog_participants",

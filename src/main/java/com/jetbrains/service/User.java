@@ -12,10 +12,16 @@ import javax.servlet.http.HttpSession;
 
 public class User {
     private Session session;
+    private SessionFactory sessionsFactory;
 
     public User() {
-        SessionFactory sessions = new Configuration().configure().buildSessionFactory();
-        this.session = sessions.openSession();
+        this.sessionsFactory = new Configuration().configure().buildSessionFactory();
+        this.session = this.sessionsFactory.openSession();
+    }
+
+    protected void finalize() {
+        this.session.close();
+        this.sessionsFactory.close();
     }
 
     private UsersEntity getUserByColumn(String uniqueColumn, Object value) {

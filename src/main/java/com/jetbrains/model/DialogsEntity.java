@@ -1,14 +1,12 @@
 package com.jetbrains.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Set;
 
 @Entity
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 @Table(name = "dialogs", schema = "kotlin_webdemo", catalog = "")
 public class DialogsEntity {
     private int id;
@@ -112,6 +110,7 @@ public class DialogsEntity {
         this.messages = messages;
     }
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "dialogId")
     public Set<DialogMessagesEntity> getMessages() {
         return this.messages;
