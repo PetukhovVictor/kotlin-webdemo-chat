@@ -16,6 +16,7 @@
 @chat-dialog-message-own-color: #f0e8e2;
 @chat-dialog-message-avatar-size: 40px;
 @chat-dialog-message-interval: 20px;
+@chat-dialog-message-from-avatar-offset: 20px;
 
 @chat-dialog-new-message-padding: 10px;
 @chat-dialog-new-message-height: 50px;
@@ -143,7 +144,6 @@
             border: 6px solid transparent;
             border-right: 7px solid @chat-dialog-message-color;
             margin-left: -@chat-dialog-message-padding - 13px;
-            margin-top: 4px;
             position: absolute;
           }
 
@@ -152,8 +152,19 @@
             background: @chat-dialog-message-color;
             border-radius: 7px;
             padding: @chat-dialog-message-padding;
-            margin-left: 15px;
+            margin-left: @chat-dialog-message-from-avatar-offset;
             width: @chat-dialog-message-width;
+
+            .dialog-message-date {
+              color: gray;
+              font-size: 11px;
+              display: block;
+              margin-top: 5px;
+
+              span:nth-child(n+2) {
+                margin-left: 10px;
+              }
+            }
           }
         }
 
@@ -171,7 +182,7 @@
           .dialog-message-text {
             background: @chat-dialog-message-own-color;
             margin-left: 0;
-            margin-right: 15px;
+            margin-right: @chat-dialog-message-from-avatar-offset;
             float: right;
           }
 

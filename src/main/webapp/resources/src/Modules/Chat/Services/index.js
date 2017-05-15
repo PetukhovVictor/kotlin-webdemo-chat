@@ -5,6 +5,11 @@ const DIALOGS_REST = "/rest/dialogs";
 const DIALOG_MESSAGES_REST = "/rest/dialog/messages";
 
 export const ChatServices = {
+    /**
+     * Получение информации о пользователе.
+     *
+     * @returns Promise с информацией о пользователе.
+     */
     getUserInfo () {
         return fetch(USER_INFO_REST, {
             method: 'GET',
@@ -19,6 +24,11 @@ export const ChatServices = {
         )
     },
 
+    /**
+     * Получение списка диалогов.
+     *
+     * @returns Promise со списком диалогов.
+     */
     loadDialogs () {
         return fetch(DIALOGS_REST, {
             method: 'GET',
@@ -33,6 +43,13 @@ export const ChatServices = {
         )
     },
 
+    /**
+     * Получение списка сообщение диалога.
+     *
+     * @param dialogId ID диалога, сообщения которого необходимо загрузить.
+     *
+     * @returns Promise со списком сообщений диалога.
+     */
     loadMessages (dialogId) {
         return fetch(DIALOG_MESSAGES_REST, {
             method: 'POST',

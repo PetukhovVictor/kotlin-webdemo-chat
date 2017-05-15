@@ -4,6 +4,9 @@ import classNames from 'classNames';
 import {ChatServices} from './Services';
 import {Dialog} from './Components/Dialog';
 
+/**
+ * Компонент realtime-чата.
+ */
 export const Chat = React.createClass({
     displayName: 'Chat',
 
@@ -11,8 +14,9 @@ export const Chat = React.createClass({
      * Начальное состояние компонента.
      *
      * isLoading - флаг, указывающий на то, загружается ли список диалогов в настоящий момент.
-     * activeDialog - активный диалог (по умолчания не выбрано ниодного диалога).
+     * activeDialog - активный диалог (по умолчанию диалог не выбран).
      * dialogs - список диалогов.
+     * user - текущий пользователь.
      */
     getInitialState () {
         return {
@@ -24,7 +28,7 @@ export const Chat = React.createClass({
     },
 
     /**
-     * После монтирования компонента стартуем загрузку списка диалогов.
+     * После монтирования компонента стартуем загрузку списка диалогов и информации о текущем пользователе.
      * По окочании загрузки - записываем результат в state (и далее отображаем диалоги).
      */
     componentDidMount () {
@@ -32,8 +36,8 @@ export const Chat = React.createClass({
         const dialogsPromise = ChatServices.loadDialogs();
 
         Promise.all([userInfoPromise, dialogsPromise]).then(result => {
-            const userInfo = result[0];
             const dialogs = result[1];
+            const userInfo = result[0];
             this.setState({
                 isLoading: false,
                 dialogs: dialogs,
@@ -46,10 +50,20 @@ export const Chat = React.createClass({
         });
     },
 
+    /**
+     * Обработка клика по диалогу.
+     *
+     * @param dialog Выбранный диалог.
+     */
     handleClickDialog (dialog) {
         this.setState({ activeDialog: dialog });
     },
 
+    /**
+     * Рендеринг диалога в списке диалогов.
+     *
+     * @param dialog Объект диалога, который нужно отрендерить.
+     */
     renderDialogItem (dialog) {
         const participant = dialog.participants[0];
         const classes = classNames({
@@ -73,6 +87,9 @@ export const Chat = React.createClass({
         )
     },
 
+    /**
+     * Рендеринг списка диалогов.
+     */
     renderDialogs () {
         const {dialogs} = this.state;
         let dialogElements = [];
@@ -85,9 +102,8 @@ export const Chat = React.createClass({
     },
 
     /**
-     * В зависимости от состояния загрузки рендерим либо лоадер, либо компонент чата.
-     *
-     * @return {JSX.Element}
+     * Рендеринг компонента чата.
+     * В зависимости от состояния загрузки рендерим либо лоадер, либо список диалогов.
      */
     render () {
         const {isLoading, activeDialog, user} = this.state;
