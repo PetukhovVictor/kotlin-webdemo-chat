@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { findDOMNode } from 'react-dom';
+import classNames from 'classNames';
 
 import {ChatServices} from '../Services'
 
@@ -6,7 +8,8 @@ export const Dialog = React.createClass({
     displayName: 'Chat.Dialog',
 
     propTypes: {
-        id: React.PropTypes.number
+        dialog: React.PropTypes.object,
+        user: React.PropTypes.object
     },
 
     getInitialState () {
@@ -22,6 +25,7 @@ export const Dialog = React.createClass({
                 activeRequest: null,
                 messages: messages
             });
+            this.setScrollToBottom();
         }).catch(() => {
             this.setState({
                 activeRequest: null
@@ -32,13 +36,18 @@ export const Dialog = React.createClass({
     },
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.id !== nextProps.id) {
+        if (nextProps.dialog !== this.props.dialog) {
             if (this.state.activeRequest !== null) {
                 this.state.activeRequest.terminate();
             }
-            this.loadMessages(nextProps.id);
+            this.loadMessages(nextProps.dialog.id);
         }
 
+    },
+
+    setScrollToBottom() {
+        const el = findDOMNode(this.refs['dialog-messages-wrap']);
+        el.scrollTop = el.scrollHeight;
     },
 
     renderNotSelectedDialog() {
@@ -47,29 +56,89 @@ export const Dialog = React.createClass({
         );
     },
 
+    handleInputMessage(e) {
+        e.target.style.height = 'auto';
+        e.target.style.height = `${e.target.scrollHeight}px`;
+    },
+
     renderDialogLoading() {
         return (
             <div className="dialog-loading">Загрузка...</div>
         );
     },
 
-    renderMessages() {
-        const isLoading = this.state.activeRequest !== null;
+    renderDialogInfo() {
+        const {dialog} = this.props;
+        const participant = dialog.participants[0];
 
-        return 'messages';
+        return (
+            <div className="dialog-description" key="dialog-info">
+                {participant.name}
+            </div>
+        )
+    },
+
+    renderSendMessageBlock() {
+        return (
+            <div className="dialog-send-message" key="send-message">
+                <textarea
+                    placeholder="Сообщение..."
+                    onInput={this.handleInputMessage}
+                />
+                <button type="submit">Отправить</button>
+            </div>
+        )
+    },
+
+    renderMessage(messageObj) {
+        const {user} = this.props;
+        const classes = classNames({
+            "dialog-message-item": true,
+            "own-message": user.id === messageObj.author.id
+        });
+
+        return (
+            <div className={classes} key={`message${messageObj.id}`}>
+                <div className="dialog-message-user-avatar">
+                    <img src={messageObj.author.picture} alt="" />
+                </div>
+                <div className="dialog-message-text">{messageObj.message}</div>
+            </div>
+        );
+    },
+
+    renderMessages() {
+        const {messages} = this.state;
+        let messageElements = [];
+
+        messages.map(message => {
+            messageElements.push(this.renderMessage(message));
+        });
+
+        return (
+            <div className="dialog-messages-wrap" ref="dialog-messages-wrap" key="messages">
+                <div className="dialog-messages">
+                    {messageElements}
+                </div>
+            </div>
+        );
     },
 
     renderDialog() {
         const isLoading = this.state.activeRequest !== null;
 
-        return isLoading ? this.renderDialogLoading() : this.renderMessages();
+        return isLoading ? this.renderDialogLoading() : [
+            this.renderDialogInfo(),
+            this.renderMessages(),
+            this.renderSendMessageBlock()
+        ];
     },
 
     /**
      * @return {JSX.Element}
      */
     render () {
-        const dialogSelected = this.props.id !== 0;
+        const dialogSelected = this.props.dialog !== null;
 
         return (
             <div className="dialog">

@@ -1,7 +1,26 @@
 @chat-width: 800px;
 @chat-height: 500px;
+
 @chat-dialogs-width: 220px;
+@chat-dialogs-avatar-size: 50px;
+@chat-dialogs-item-height: 50px;
+@chat-dialogs-item-active-color: #eee;
+
+@chat-dialog-width: @chat-width - @chat-dialogs-width - @chat-dialog-left-offset;
 @chat-dialog-left-offset: 20px;
+@chat-dialog-font-size: 13px;
+
+@chat-dialog-message-width: 350px;
+@chat-dialog-message-padding: 15px;
+@chat-dialog-message-color: #f5f4f4;
+@chat-dialog-message-own-color: #f0e8e2;
+@chat-dialog-message-avatar-size: 40px;
+@chat-dialog-message-interval: 20px;
+
+@chat-dialog-new-message-padding: 10px;
+@chat-dialog-new-message-height: 50px;
+@chat-dialog-new-message-max-height: 200px;
+@chat-dialog-new-message-button-width: 100px;
 
 .chat {
   width: @chat-width;
@@ -25,12 +44,12 @@
 
     .dialogs-loading {
       margin-top: @chat-height/2 - 50;
-      font-size: 13px;
+      font-size: @chat-dialog-font-size;
       text-align: center;
     }
 
     .dialog-item {
-      height: 50px;
+      height: @chat-dialogs-item-height;
       padding: 10px 15px;
       cursor: pointer;
       transition: background .5s ease;
@@ -39,9 +58,9 @@
         float: left;
 
         img {
-          max-width: 50px;
-          max-height: 50px;
-          border-radius: 25px;
+          max-width: @chat-dialogs-avatar-size;
+          max-height: @chat-dialogs-avatar-size;
+          border-radius: @chat-dialogs-avatar-size/2;
         }
       }
 
@@ -55,34 +74,153 @@
     }
 
     .dialog-item:hover {
-      background: #eee;
+      background: @chat-dialogs-item-active-color;
     }
 
     .dialog-item-active {
-      background: #eee;
+      background: @chat-dialogs-item-active-color;
     }
   }
 
   .dialog {
     background: #fff;
-    width: @chat-width - @chat-dialogs-width - @chat-dialog-left-offset;
+    width: @chat-dialog-width;
     margin-left: @chat-dialog-left-offset;
     height: 100%;
     float: left;
     border: 1px solid #eee;
     border-radius: 2px;
     box-sizing: border-box;
+    display: flex;
+    flex-flow: column;
 
     .dialog-empty {
       margin-top: @chat-height/2 - 50;
-      font-size: 13px;
+      font-size: @chat-dialog-font-size;
       text-align: center;
     }
 
     .dialog-loading {
       margin-top: @chat-height/2 - 50;
-      font-size: 13px;
+      font-size: @chat-dialog-font-size;
       text-align: center;
+    }
+
+    .dialog-description {
+      padding: 15px 0 10px 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .dialog-messages-wrap {
+      flex: 1 1 auto;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      align-items: stretch;
+
+      .dialog-messages {
+        margin-top: auto;
+        width: @chat-dialog-width - @chat-dialog-left-offset*2;
+
+        .dialog-message-item {
+          margin-bottom: @chat-dialog-message-interval;
+          font-size: @chat-dialog-font-size;
+          position: relative;
+          width: 100%;
+
+          .dialog-message-user-avatar {
+            float: left;
+
+            img {
+              max-width: @chat-dialog-message-avatar-size;
+              max-height: @chat-dialog-message-avatar-size;
+              border-radius: @chat-dialog-message-avatar-size/2;
+            }
+          }
+
+          .dialog-message-text:before {
+            content: '';
+            border: 6px solid transparent;
+            border-right: 7px solid @chat-dialog-message-color;
+            margin-left: -@chat-dialog-message-padding - 13px;
+            margin-top: 4px;
+            position: absolute;
+          }
+
+          .dialog-message-text {
+            display: inline-block;
+            background: @chat-dialog-message-color;
+            border-radius: 7px;
+            padding: @chat-dialog-message-padding;
+            margin-left: 15px;
+            width: @chat-dialog-message-width;
+          }
+        }
+
+        .dialog-message-item:after {
+          content: ".";
+          display: block;
+          clear: both;
+          visibility: hidden;
+          line-height: 0;
+          height: 0;
+        }
+
+        .dialog-message-item.own-message {
+
+          .dialog-message-text {
+            background: @chat-dialog-message-own-color;
+            margin-left: 0;
+            margin-right: 15px;
+            float: right;
+          }
+
+          .dialog-message-text:before {
+            margin-left: @chat-dialog-message-width + @chat-dialog-message-padding;
+            border-left: 7px solid @chat-dialog-message-own-color;
+            border-right: 7px solid transparent;
+          }
+
+          .dialog-message-user-avatar {
+            float: right;
+          }
+        }
+      }
+    }
+
+    .dialog-send-message {
+      position: relative;
+      width: 100%;
+      border-top: 1px solid #eee;
+
+      textarea {
+        border: 0;
+        height: @chat-dialog-new-message-height;
+        box-sizing: border-box;
+        outline: none;
+        resize: none;
+        padding: @chat-dialog-new-message-padding (@chat-dialog-new-message-button-width + @chat-dialog-new-message-padding) @chat-dialog-new-message-padding @chat-dialog-new-message-padding;
+        font-size: 12px;
+        width: 100%;
+        max-height: @chat-dialog-new-message-max-height;
+      }
+
+      button[type="submit"] {
+        background: #ddd;
+        cursor: pointer;
+        border: 0;
+        height: @chat-dialog-new-message-height + 6px;
+        transition: background .5s ease;
+        outline: none;
+        bottom: 0;
+        right: 0;
+        position: absolute;
+        width: @chat-dialog-new-message-button-width;
+      }
+
+      button[type="submit"]:hover {
+        background: #cccccc;
+      }
     }
   }
 }

@@ -11,14 +11,15 @@ export const Chat = React.createClass({
      * Начальное состояние компонента.
      *
      * isLoading - флаг, указывающий на то, загружается ли список диалогов в настоящий момент.
-     * activeDialog - ID активного диалога (по умолчания не выбрано ниодного диалога).
+     * activeDialog - активный диалог (по умолчания не выбрано ниодного диалога).
      * dialogs - список диалогов.
      */
     getInitialState () {
         return {
             isLoading: true,
-            activeDialog: 0,
-            dialogs: null
+            activeDialog: null,
+            dialogs: null,
+            user: null
         };
     },
 
@@ -27,10 +28,16 @@ export const Chat = React.createClass({
      * По окочании загрузки - записываем результат в state (и далее отображаем диалоги).
      */
     componentDidMount () {
-        ChatServices.loadDialogs().then(dialogs => {
+        const userInfoPromise = ChatServices.getUserInfo();
+        const dialogsPromise = ChatServices.loadDialogs();
+
+        Promise.all([userInfoPromise, dialogsPromise]).then(result => {
+            const userInfo = result[0];
+            const dialogs = result[1];
             this.setState({
                 isLoading: false,
-                dialogs: dialogs
+                dialogs: dialogs,
+                user: userInfo
             });
         }).catch(() => {
             this.setState({
@@ -39,19 +46,23 @@ export const Chat = React.createClass({
         });
     },
 
-    handleClickDialog (dialogId) {
-        this.setState({ activeDialog: dialogId });
+    handleClickDialog (dialog) {
+        this.setState({ activeDialog: dialog });
     },
 
     renderDialogItem (dialog) {
         const participant = dialog.participants[0];
         const classes = classNames({
             "dialog-item": true,
-            "dialog-item-active": dialog.id === this.state.activeDialog
+            "dialog-item-active": dialog === this.state.activeDialog
         });
 
         return (
-            <div className={classes} onClick={this.handleClickDialog.bind(this, dialog.id)}>
+            <div
+                className={classes}
+                onClick={this.handleClickDialog.bind(this, dialog)}
+                key={`dialog${dialog.id}`}
+            >
                 <div className="dialog-user-picture">
                     <img src={participant.picture} alt="" />
                 </div>
@@ -64,7 +75,7 @@ export const Chat = React.createClass({
 
     renderDialogs () {
         const {dialogs} = this.state;
-        const dialogElements = [];
+        let dialogElements = [];
 
         dialogs.map(dialog => {
             dialogElements.push(this.renderDialogItem(dialog));
@@ -79,7 +90,7 @@ export const Chat = React.createClass({
      * @return {JSX.Element}
      */
     render () {
-        const {isLoading, activeDialog} = this.state;
+        const {isLoading, activeDialog, user} = this.state;
 
         return (
             <div className="chat">
@@ -91,7 +102,7 @@ export const Chat = React.createClass({
                             this.renderDialogs()
                     }
                 </div>
-                <Dialog id={activeDialog} />
+                <Dialog dialog={activeDialog} user={user} />
             </div>
         );
     }
