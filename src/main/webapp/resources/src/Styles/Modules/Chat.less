@@ -23,6 +23,10 @@
 @chat-dialog-new-message-max-height: 200px;
 @chat-dialog-new-message-button-width: 100px;
 
+.error {
+  color: #be0000;
+}
+
 .chat {
   width: @chat-width;
   height: @chat-height;
@@ -155,13 +159,14 @@
             margin-left: @chat-dialog-message-from-avatar-offset;
             width: @chat-dialog-message-width;
 
-            .dialog-message-date {
+
+            .dialog-message-footer {
               color: gray;
               font-size: 11px;
               display: block;
               margin-top: 5px;
 
-              span:nth-child(n+2) {
+              *:nth-child(n+2) {
                 margin-left: 10px;
               }
             }

@@ -32,8 +32,16 @@ export const Chat = React.createClass({
      * По окочании загрузки - записываем результат в state (и далее отображаем диалоги).
      */
     componentDidMount () {
+        this.chatInit();
+    },
+    /**
+     * Инициализация чата (отправка фундаментальных запросов: на получением списка диалогов и информации о текущем пользователе).
+     */
+    chatInit () {
         const userInfoPromise = ChatServices.getUserInfo();
         const dialogsPromise = ChatServices.loadDialogs();
+
+        this.setState({ isLoading: true });
 
         Promise.all([userInfoPromise, dialogsPromise]).then(result => {
             const dialogs = result[1];
@@ -51,12 +59,24 @@ export const Chat = React.createClass({
     },
 
     /**
+     * Обработка клика по ссылке повторной попытки загрузки диалогов.
+     *
+     * @param event Объект события Click.
+     */
+    handleClickTryAgainInit (event) {
+        this.chatInit();
+        event.preventDefault();
+    },
+
+    /**
      * Обработка клика по диалогу.
      *
      * @param dialog Выбранный диалог.
+     * @param event Объект события Click.
      */
-    handleClickDialog (dialog) {
+    handleClickDialog (dialog, event) {
         this.setState({ activeDialog: dialog });
+        event.preventDefault();
     },
 
     /**
@@ -106,17 +126,27 @@ export const Chat = React.createClass({
      * В зависимости от состояния загрузки рендерим либо лоадер, либо список диалогов.
      */
     render () {
-        const {isLoading, activeDialog, user} = this.state;
+        const {isLoading, dialogs, activeDialog, user} = this.state;
+        let content;
+
+        if (isLoading) {
+            content = <div className="dialogs-loading">Загрузка...</div>;
+        } else if (dialogs !== null) {
+            content = this.renderDialogs();
+        } else {
+            content = (
+                <div className="dialogs-loading">
+                    <p className="error">Ошибка при загрузке.</p>
+                    <a href="#" onClick={this.handleClickTryAgainInit}>Попробовать ещё раз</a>
+                </div>
+            );
+        }
 
         return (
             <div className="chat">
                 <div className="dialogs">
                     <h1>Диалоги</h1>
-                    {
-                        isLoading ?
-                            <div className="dialogs-loading">Загрузка...</div> :
-                            this.renderDialogs()
-                    }
+                    {content}
                 </div>
                 <Dialog dialog={activeDialog} user={user} />
             </div>
