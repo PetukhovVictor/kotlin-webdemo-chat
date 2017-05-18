@@ -1,7 +1,7 @@
-package com.jetbrains.service;
+package com.jetbrains.dao;
 
 import com.google.api.services.oauth2.model.Userinfoplus;
-import com.jetbrains.model.UsersEntity;
+import com.jetbrains.domain.UserEntity;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -10,11 +10,11 @@ import org.hibernate.criterion.Restrictions;
 
 import javax.servlet.http.HttpSession;
 
-public class User {
+public class UserDAO {
     private Session session;
     private SessionFactory sessionsFactory;
 
-    public User() {
+    public UserDAO() {
         this.sessionsFactory = new Configuration().configure().buildSessionFactory();
         this.session = this.sessionsFactory.openSession();
     }
@@ -24,22 +24,22 @@ public class User {
         this.sessionsFactory.close();
     }
 
-    private UsersEntity getUserByColumn(String uniqueColumn, Object value) {
-        Criteria userCriteria = this.session.createCriteria(UsersEntity.class);
+    private UserEntity getUserByColumn(String uniqueColumn, Object value) {
+        Criteria userCriteria = this.session.createCriteria(UserEntity.class);
         userCriteria.add(Restrictions.eq(uniqueColumn, value));
-        return (UsersEntity) userCriteria.uniqueResult();
+        return (UserEntity) userCriteria.uniqueResult();
     }
 
-    public UsersEntity getUserByGid(String gid) {
+    public UserEntity getUserByGid(String gid) {
         return this.getUserByColumn("gid", gid);
     }
 
-    public UsersEntity getUserById(int id) {
+    public UserEntity getUserById(int id) {
         return this.getUserByColumn("id", id);
     }
 
-    public UsersEntity getUserBySession(HttpSession session) {
-        return (UsersEntity) session.getAttribute("user");
+    public UserEntity getUserBySession(HttpSession session) {
+        return (UserEntity) session.getAttribute("user");
     }
 
     private boolean isLogged(HttpSession session) {
@@ -52,7 +52,7 @@ public class User {
 
     private void signUp(Userinfoplus userInfo) {
         this.session.beginTransaction();
-        UsersEntity user = new UsersEntity();
+        UserEntity user = new UserEntity();
         user.setEmail(userInfo.getEmail());
         user.setGid(userInfo.getId());
         user.setName(userInfo.getName());
@@ -64,7 +64,7 @@ public class User {
         this.session.getTransaction().commit();
     }
 
-    public void signIn(UsersEntity user, HttpSession session) {
+    public void signIn(UserEntity user, HttpSession session) {
         if (!this.isLogged(session)) {
             session.setAttribute("user", user);
         }
@@ -72,7 +72,7 @@ public class User {
 
     public void sign(Userinfoplus userInfo, HttpSession session) {
         String gid = userInfo.getId();
-        UsersEntity user = this.getUserByGid(gid);
+        UserEntity user = this.getUserByGid(gid);
         if (user == null) {
             this.signUp(userInfo);
             user = this.getUserByGid(gid);

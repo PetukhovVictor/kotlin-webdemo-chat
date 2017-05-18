@@ -1,16 +1,16 @@
-package com.jetbrains.model;
+package com.jetbrains.domain;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "dialog_messages", schema = "kotlin_webdemo", catalog = "")
-public class DialogMessagesEntity {
+public class DialogMessageEntity {
     private int id;
     private String message;
     private Timestamp date;
     private int dialogId;
-    private UsersEntity author;
+    private UserEntity author;
 
     @Id
     @Column(name = "id")
@@ -47,7 +47,7 @@ public class DialogMessagesEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DialogMessagesEntity that = (DialogMessagesEntity) o;
+        DialogMessageEntity that = (DialogMessageEntity) o;
 
         if (id != that.id) return false;
         if (message != null ? !message.equals(that.message) : that.message != null) return false;
@@ -74,13 +74,13 @@ public class DialogMessagesEntity {
         this.dialogId = dialogId;
     }
 
-    public void setAuthor(UsersEntity author) {
+    public void setAuthor(UserEntity author) {
         this.author = author;
     }
 
     @ManyToOne
     @JoinColumn(name = "author_id")
-    public UsersEntity getAuthor() {
+    public UserEntity getAuthor() {
         return this.author;
     }
 }

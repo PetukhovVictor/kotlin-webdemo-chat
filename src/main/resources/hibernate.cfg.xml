@@ -11,9 +11,9 @@
     <property name="connection.username">kotlin_webdemo</property>
     <property name="connection.password">eU8x4862</property>
 
-    <mapping class="com.jetbrains.model.UsersEntity" />
-    <mapping class="com.jetbrains.model.DialogsEntity" />
-    <mapping class="com.jetbrains.model.DialogMessagesEntity" />
+    <mapping class="com.jetbrains.domain.UserEntity" />
+    <mapping class="com.jetbrains.domain.DialogEntity" />
+    <mapping class="com.jetbrains.domain.DialogMessageEntity" />
 
   </session-factory>
 </hibernate-configuration>

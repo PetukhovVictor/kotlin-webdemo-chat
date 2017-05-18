@@ -1,4 +1,4 @@
-package com.jetbrains.model;
+package com.jetbrains.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -7,13 +7,13 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users", schema = "kotlin_webdemo", catalog = "")
-public class UsersEntity {
+public class UserEntity {
     private int id;
     private String email;
     private String name;
     private String picture;
     private String gid;
-    private Set<DialogsEntity> dialogs;
+    private Set<DialogEntity> dialogs;
 
     @Id
     @Column(name = "id")
@@ -60,7 +60,7 @@ public class UsersEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UsersEntity that = (UsersEntity) o;
+        UserEntity that = (UserEntity) o;
 
         if (id != that.id) return false;
         if (email != null ? !email.equals(that.email) : that.email != null) return false;
@@ -89,7 +89,7 @@ public class UsersEntity {
         this.gid = gid;
     }
 
-    public void setDialogs(Set<DialogsEntity> dialogs) {
+    public void setDialogs(Set<DialogEntity> dialogs) {
         this.dialogs = dialogs;
     }
 
@@ -100,7 +100,7 @@ public class UsersEntity {
             joinColumns = @JoinColumn(name = "participant_id"),
             inverseJoinColumns = @JoinColumn(name = "dialog_id")
     )
-    public Set<DialogsEntity> getDialogs() {
+    public Set<DialogEntity> getDialogs() {
         return this.dialogs;
     }
 }

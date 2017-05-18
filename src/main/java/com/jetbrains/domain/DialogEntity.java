@@ -1,4 +1,4 @@
-package com.jetbrains.model;
+package com.jetbrains.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -8,14 +8,14 @@ import java.util.Set;
 
 @Entity
 @Table(name = "dialogs", schema = "kotlin_webdemo", catalog = "")
-public class DialogsEntity {
+public class DialogEntity {
     private int id;
     private Timestamp creationDate;
     private String title;
     private Timestamp lastUpdateDate;
     private int ownerId;
-    private Set<UsersEntity> participants;
-    private Set<DialogMessagesEntity> messages;
+    private Set<UserEntity> participants;
+    private Set<DialogMessageEntity> messages;
 
     @Id
     @Column(name = "id")
@@ -62,7 +62,7 @@ public class DialogsEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DialogsEntity that = (DialogsEntity) o;
+        DialogEntity that = (DialogEntity) o;
 
         if (id != that.id) return false;
         if (creationDate != null ? !creationDate.equals(that.creationDate) : that.creationDate != null) return false;
@@ -92,7 +92,7 @@ public class DialogsEntity {
         this.ownerId = ownerId;
     }
 
-    public void setParticipants(Set<UsersEntity> participants) {
+    public void setParticipants(Set<UserEntity> participants) {
         this.participants = participants;
     }
 
@@ -102,17 +102,17 @@ public class DialogsEntity {
             joinColumns = @JoinColumn(name = "dialog_id"),
             inverseJoinColumns = @JoinColumn(name = "participant_id")
     )
-    public Set<UsersEntity> getParticipants() {
+    public Set<UserEntity> getParticipants() {
         return this.participants;
     }
 
-    public void setMessages(Set<DialogMessagesEntity> messages) {
+    public void setMessages(Set<DialogMessageEntity> messages) {
         this.messages = messages;
     }
 
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "dialogId")
-    public Set<DialogMessagesEntity> getMessages() {
+    public Set<DialogMessageEntity> getMessages() {
         return this.messages;
     }
 }

@@ -77,7 +77,7 @@ export const Dialog = React.createClass({
     /**
      * Обработчик получения новых props.
      * При выборе нового диалога отменяем активный запрос на получение списка сообщения (если имеется)
-     * и отправляем другой для только что выбранного диалога.
+     * и отправляем другой для только что выбранного диалога, а также возвращаем state к исходному состоянию.
      *
      * @param nextProps Новые props компонента.
      */
@@ -86,6 +86,7 @@ export const Dialog = React.createClass({
             if (this.state.activeRequest !== null) {
                 this.state.activeRequest.terminate();
             }
+            this.setState(this.getInitialState());
             this.loadMessages(nextProps.dialog.id);
         }
     },
@@ -95,8 +96,8 @@ export const Dialog = React.createClass({
      * Прокрутка осуществляется при выборе диалога и при отправке/получении сообщения.
      */
     setScrollToBottom() {
-        const el = findDOMNode(this.refs['dialog-messages-wrap']);
-        el.scrollTop = el.scrollHeight;
+        const dialogMessagesWrapElement = findDOMNode(this.refs['dialog-messages-wrap']);
+        dialogMessagesWrapElement.scrollTop = dialogMessagesWrapElement.scrollHeight;
     },
 
     /**
@@ -148,7 +149,10 @@ export const Dialog = React.createClass({
 
         remove(sendingMessages, sendingMessage => sendingMessage.id === pseudoId);
         messages.push(message);
-        this.setState({ messages, sendingMessages });
+        this.setState(
+            { messages, sendingMessages },
+            () => this.setScrollToBottom()
+        );
     },
 
     /**
@@ -161,7 +165,10 @@ export const Dialog = React.createClass({
 
         const unsentMessage = remove(sendingMessages, sendingMessage => sendingMessage.id === pseudoId);
         unsentMessages.push(unsentMessage[0]);
-        this.setState({ unsentMessages, sendingMessages });
+        this.setState(
+            { unsentMessages, sendingMessages },
+            () => this.setScrollToBottom()
+        );
     },
 
     /**
@@ -179,6 +186,8 @@ export const Dialog = React.createClass({
             message,
             author: this.props.user
         };
+
+        findDOMNode(this.refs['dialog-send-message-input']).value = '';
 
         this.setState({
             isMessageSending: true,
@@ -271,11 +280,22 @@ export const Dialog = React.createClass({
         if ((event.ctrlKey || event.metaKey) && event.keyCode === 13 && event.target.value) {
             event.target.value += '\n';
             this.resizeNewMessageInput(event.target);
-        // Не отправляем сообщение, если в очереди уже есть отправляемое сообщение (не завершился запрос).
+            // Не отправляем сообщение, если в очереди уже есть отправляемое сообщение (не завершился запрос).
         } else if (event.keyCode === 13) {
             this.sendMessage(event.target.value);
             event.preventDefault();
         }
+    },
+
+    /**
+     * Обработка клика по кнопке отправки сообщения.
+     *
+     * @param event Объект события Click.
+     */
+    handleClickSendMessageButton(event) {
+        const message = findDOMNode(this.refs['dialog-send-message-input']).value;
+        this.sendMessage(message);
+        event.preventDefault();
     },
 
     /**
@@ -315,7 +335,6 @@ export const Dialog = React.createClass({
      */
     renderSendMessageBlock() {
         const {isMessageSending} = this.state;
-        const sendMessageText = isMessageSending ? 'Отправка...' : 'Отправить';
 
         return (
             <div className="dialog-send-message" key="send-message">
@@ -323,8 +342,9 @@ export const Dialog = React.createClass({
                     placeholder="Сообщение..."
                     onInput={this.handleInputMessage}
                     onKeyDown={this.handleKeyDownMessage}
+                    ref="dialog-send-message-input"
                 />
-                <button type="submit" disabled={isMessageSending}>{sendMessageText}</button>
+                <button type="submit" onClick={this.handleClickSendMessageButton}>Отправить</button>
             </div>
         )
     },
