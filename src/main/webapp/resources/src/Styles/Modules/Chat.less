@@ -1,10 +1,13 @@
 @chat-width: 800px;
 @chat-height: 500px;
 
+@chat-user-avatar-size: 30px;
+
 @chat-dialogs-width: 220px;
 @chat-dialogs-avatar-size: 50px;
 @chat-dialogs-item-height: 50px;
 @chat-dialogs-item-active-color: #eee;
+@chat-dialogs-search-input-height: 42px;
 
 @chat-dialog-width: @chat-width - @chat-dialogs-width - @chat-dialog-left-offset;
 @chat-dialog-left-offset: 20px;
@@ -32,9 +35,50 @@
   height: @chat-height;
   position: absolute;
   left: 50%;
-  margin: 20px 0 20px -@chat-width/2;
+  margin: 20px 0 100px -@chat-width/2;
+
+  h1 {
+    float: left;
+    height: 30px;
+    margin-bottom: 10px;
+  }
+
+  .user-info {
+    width: 100%;
+    text-align: right;
+    margin-bottom: 10px;
+    height: @chat-user-avatar-size;
+    line-height: @chat-user-avatar-size;
+    vertical-align: middle;
+
+    .user-info-logout {
+      margin-left: 40px;
+      font-size: 14px;
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    .user-info-name {
+      display: inline-block;
+      margin-left: 10px;
+      font-size: 14px;
+    }
+
+    .user-info-avatar {
+      display: inline-block;
+      vertical-align: middle;
+
+      img {
+        max-width: @chat-user-avatar-size;
+        max-height: @chat-user-avatar-size;
+        border-radius: @chat-user-avatar-size/2;
+        display: block;
+      }
+    }
+  }
 
   .dialogs {
+    clear: both;
     background: #fff;
     width: @chat-dialogs-width;
     height: 100%;
@@ -43,8 +87,44 @@
     border-radius: 2px;
     box-sizing: border-box;
 
-    h1 {
+    h2 {
       margin-left: 15px;
+    }
+
+    .dialogs-search-container {
+      .dialogs-search {
+        outline: none;
+        position: relative;
+        width: 100%;
+        box-sizing: border-box;
+        border: 0;
+        border-bottom: 1px solid #ececec;
+        height: @chat-dialogs-search-input-height;
+        font-size: 13px;
+        padding: 0 35px 0 10px;
+      }
+
+      .dialogs-search-close {
+        display: block;
+        margin-top: -@chat-dialogs-search-input-height/2 - 11px;
+        position: relative;
+        z-index: 2;
+        color: #aeaeae;
+        margin-right: 15px;
+        float: right;
+        transition: color .5s ease;
+      }
+
+      .dialogs-search-close:hover {
+        text-decoration: none;
+        color: #808080;
+      }
+
+      .dialogs-search-close:after {
+        font-family: 'icons';
+        content: "\e903";
+        font-size: 13px;
+      }
     }
 
     .dialogs-loading {

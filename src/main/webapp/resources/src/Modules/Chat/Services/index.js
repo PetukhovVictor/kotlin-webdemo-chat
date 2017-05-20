@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client';
 
 const USER_INFO_REST = "/rest/user_info";
 const DIALOGS_REST = "/rest/dialogs";
+const DIALOGS_SEARCH_REST = "/rest/dialogs/search";
 const DIALOG_MESSAGES_REST = "/rest/dialog/messages";
 const DIALOG_SEND_MESSAGE_REST = "/rest/dialog/message/send";
 const DIALOG_MESSAGES_ENDPOINT = "/message/send";
@@ -109,12 +110,31 @@ export const ChatServices = {
             () => {
                 throw 'Error send message!';
             }
-        ).then((messageObj) => {
-            // if (stompClient !== null) {
-            //     stompClient.send(DIALOG_MESSAGES_ENDPOINT, {}, JSON.stringify(messageObj));
-            // }
-            return messageObj;
-        })
+        )
+    },
+
+    /**
+     * Осуществление поиска собеседников (по имени, либо по email).
+     *
+     * @param value Поисковая фраза.
+     */
+    search (value) {
+        return fetch(DIALOGS_SEARCH_REST, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: queryString.stringify({ phrase: value })
+        }).then(
+            response => {
+                if (!response.ok) {
+                    throw 'Error dialogs loading!';
+                }
+                return response.json();
+            },
+            () => {
+                throw 'Error send message!';
+            }
+        )
     },
 
     /**
@@ -124,15 +144,10 @@ export const ChatServices = {
      * @param callback Callback-функция, вызываемая при получении нового сообщения.
      */
     subscribeMessages (dialogId, callback) {
-        if (stompClient !== null) {
-            stompClient.disconnect();
-        }
+        stompClient !== null && stompClient.disconnect();
         const socket = new SockJS(DIALOG_MESSAGES_ENDPOINT);
         stompClient = Stomp.over(socket);
-        stompClient.connect({
-            dialogId
-        }, frame => {
-            console.log('Connected!');
+        stompClient.connect({ dialogId }, () => {
             stompClient.subscribe(DIALOG_MESSAGES_SUBSCRIBE, response => {
                 const messageObj = JSON.parse(response.body);
                 callback(messageObj);

@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { findDOMNode } from 'react-dom';
-import { remove } from 'lodash';
+import {findDOMNode} from 'react-dom';
+import {remove} from 'lodash';
 import classNames from 'classNames';
 import moment from 'moment';
-import Stomp from 'stompjs';
-import SockJS from 'sockjs-client';
 
 moment.locale('ru');
 
@@ -22,10 +20,14 @@ export const Dialog = React.createClass({
      *
      * dialog - выбранный диалог.
      * user - текущий пользователь.
+     * dialogOnTop - callback-функция для перемещения диалога в списке даилогов наверх после отправки/приема сообщения.
+     * onSearch - callback-функция для активации режима поиска.
      */
     propTypes: {
         dialog: React.PropTypes.object,
-        user: React.PropTypes.object
+        user: React.PropTypes.object,
+        dialogOnTop: React.PropTypes.func,
+        onSearch: React.PropTypes.func
     },
 
     /**
@@ -156,6 +158,7 @@ export const Dialog = React.createClass({
             { messages, sendingMessages },
             () => this.setScrollToBottom()
         );
+        this.props.dialogOnTop();
     },
 
     /**
@@ -181,8 +184,9 @@ export const Dialog = React.createClass({
      */
     receiveMessage(messageObj) {
         let {messages} = this.state;
+        const {user: {id: userId}, dialogOnTop} = this.props;
 
-        if (messageObj.authorId === this.props.user.id) {
+        if (messageObj.authorId === userId) {
             return;
         }
         messages.push(messageObj);
@@ -190,6 +194,7 @@ export const Dialog = React.createClass({
             { messages },
             () => this.setScrollToBottom()
         );
+        dialogOnTop();
     },
 
     /**
@@ -199,8 +204,8 @@ export const Dialog = React.createClass({
      */
     sendMessage(message) {
         const {sendingMessages, sendingMessagesCounter} = this.state;
+        const {user} = this.props;
         const pseudoId = -(sendingMessagesCounter + 1);
-        const user = this.props.user;
         // Формируем временный объект сообщения для мгновенного отображения в списке сообщений.
         const messageObj = {
             // Псведо-идентификатор. Он равен отрицательному числу, по модулю равному номеру сообщения в очереди на отправку.
@@ -323,6 +328,16 @@ export const Dialog = React.createClass({
     },
 
     /**
+     * Обработка клика по ссылке создания нового диалога.
+     *
+     * @param event Объект события Click.
+     */
+    handleClickNewDialog(event) {
+        this.props.onSearch();
+        event.preventDefault();
+    },
+
+    /**
      * Рендеринг сообщения о загрузке списка сообщений выбранного диалога.
      */
     renderDialogLoading() {
@@ -336,7 +351,9 @@ export const Dialog = React.createClass({
      */
     renderNotSelectedDialog() {
         return (
-            <div className="dialog-empty">Для начала переписки выберите диалог или <a href="">создайте новый</a>.</div>
+            <div className="dialog-empty">
+                Для начала переписки выберите диалог или <a href="#" onClick={this.handleClickNewDialog}>создайте новый</a>.
+            </div>
         );
     },
 
@@ -384,7 +401,7 @@ export const Dialog = React.createClass({
         const {user} = this.props;
         const classes = classNames({
             "dialog-message-item": true,
-            "own-message": user.id === messageObj.authorId || messageObj.id < 0
+            "own-message": user.id === messageObj.authorId
         });
         let footerContent;
 
