@@ -6,16 +6,16 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "dialog_messages", schema = "kotlin_webdemo", catalog = "")
 public class DialogMessageEntity {
-    private int id;
+    private Integer id;
     private String message;
     private Timestamp date;
-    private int dialogId;
+    private Integer dialogId;
     private UserEntity author;
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "id")
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -67,11 +67,11 @@ public class DialogMessageEntity {
 
     @Basic
     @Column(name = "dialog_id")
-    public int getDialogId() {
+    public Integer getDialogId() {
         return dialogId;
     }
 
-    public void setDialogId(int dialogId) {
+    public void setDialogId(Integer dialogId) {
         this.dialogId = dialogId;
     }
 

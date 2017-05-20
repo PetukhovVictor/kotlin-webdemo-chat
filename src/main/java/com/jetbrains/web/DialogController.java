@@ -8,6 +8,9 @@ import com.jetbrains.domain.DialogEntity;
 import com.jetbrains.domain.UserEntity;
 import com.jetbrains.dao.UserDAO;
 import com.jetbrains.dto.DialogMessageDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +20,13 @@ import java.util.List;
 
 @RestController
 public class DialogController {
+
+    private SimpMessagingTemplate template;
+
+    @Autowired
+    public DialogController(SimpMessagingTemplate template) {
+        this.template = template;
+    }
 
     @RequestMapping(value = "/rest/dialogs", method = RequestMethod.GET)
     public String dialogs(HttpServletRequest request) throws JsonProcessingException {
@@ -68,6 +78,14 @@ public class DialogController {
         DialogDAO dialogService = new DialogDAO();
         DialogMessageEntity newMessage = dialogService.addMessage(dialogService.getDialogById(dialogId), user, message);
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(newMessage);
+
+        DialogMessageDTO messageDTO = (new DialogDAO()).getMessage(newMessage);
+        this.template.convertAndSend("/messages/subscribe", messageDTO);
+        return mapper.writeValueAsString(messageDTO);
+    }
+
+    @SendTo("/messages/subscribe")
+    private DialogMessageDTO dialogMessageReceive(DialogMessageDTO message) throws JsonProcessingException {
+        return message;
     }
 }

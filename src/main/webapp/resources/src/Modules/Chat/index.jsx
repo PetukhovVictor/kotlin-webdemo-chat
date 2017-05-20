@@ -75,7 +75,9 @@ export const Chat = React.createClass({
      * @param event Объект события Click.
      */
     handleClickDialog (dialog, event) {
-        this.setState({ activeDialog: dialog });
+        const {activeDialog} = this.state;
+
+        activeDialog !== dialog && this.setState({ activeDialog: dialog });
         event.preventDefault();
     },
 

@@ -1,9 +1,18 @@
 import queryString from 'query-string';
+import Stomp from 'stompjs';
+import SockJS from 'sockjs-client';
 
 const USER_INFO_REST = "/rest/user_info";
 const DIALOGS_REST = "/rest/dialogs";
 const DIALOG_MESSAGES_REST = "/rest/dialog/messages";
 const DIALOG_SEND_MESSAGE_REST = "/rest/dialog/message/send";
+const DIALOG_MESSAGES_ENDPOINT = "/message/send";
+const DIALOG_MESSAGES_SUBSCRIBE = "/messages/subscribe";
+
+/**
+ * Stomp-клиент для работы с веб-сокетами (используется для приёма сообщений).
+ */
+let stompClient = null;
 
 export const ChatServices = {
     /**
@@ -100,6 +109,34 @@ export const ChatServices = {
             () => {
                 throw 'Error send message!';
             }
-        )
+        ).then((messageObj) => {
+            // if (stompClient !== null) {
+            //     stompClient.send(DIALOG_MESSAGES_ENDPOINT, {}, JSON.stringify(messageObj));
+            // }
+            return messageObj;
+        })
+    },
+
+    /**
+     * Подписка на получение новых сообщений.
+     *
+     * @param dialogId ID диалога.
+     * @param callback Callback-функция, вызываемая при получении нового сообщения.
+     */
+    subscribeMessages (dialogId, callback) {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        const socket = new SockJS(DIALOG_MESSAGES_ENDPOINT);
+        stompClient = Stomp.over(socket);
+        stompClient.connect({
+            dialogId
+        }, frame => {
+            console.log('Connected!');
+            stompClient.subscribe(DIALOG_MESSAGES_SUBSCRIBE, response => {
+                const messageObj = JSON.parse(response.body);
+                callback(messageObj);
+            });
+        })
     }
 };

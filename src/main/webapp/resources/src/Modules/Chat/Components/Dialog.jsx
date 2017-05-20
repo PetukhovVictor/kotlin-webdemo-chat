@@ -3,6 +3,8 @@ import { findDOMNode } from 'react-dom';
 import { remove } from 'lodash';
 import classNames from 'classNames';
 import moment from 'moment';
+import Stomp from 'stompjs';
+import SockJS from 'sockjs-client';
 
 moment.locale('ru');
 
@@ -88,6 +90,7 @@ export const Dialog = React.createClass({
             }
             this.setState(this.getInitialState());
             this.loadMessages(nextProps.dialog.id);
+            ChatServices.subscribeMessages(nextProps.dialog.id, this.receiveMessage);
         }
     },
 
@@ -172,6 +175,24 @@ export const Dialog = React.createClass({
     },
 
     /**
+     * Приём сообщения: добавление сообщения в список сообщений.
+     *
+     * @param messageObj Объект сообщения.
+     */
+    receiveMessage(messageObj) {
+        let {messages} = this.state;
+
+        if (messageObj.authorId === this.props.user.id) {
+            return;
+        }
+        messages.push(messageObj);
+        this.setState(
+            { messages },
+            () => this.setScrollToBottom()
+        );
+    },
+
+    /**
      * Отправка сообщения.
      *
      * @param message Текст сообщения.
@@ -179,12 +200,15 @@ export const Dialog = React.createClass({
     sendMessage(message) {
         const {sendingMessages, sendingMessagesCounter} = this.state;
         const pseudoId = -(sendingMessagesCounter + 1);
+        const user = this.props.user;
         // Формируем временный объект сообщения для мгновенного отображения в списке сообщений.
         const messageObj = {
             // Псведо-идентификатор. Он равен отрицательному числу, по модулю равному номеру сообщения в очереди на отправку.
             id: pseudoId,
             message,
-            author: this.props.user
+            authorId: user.id,
+            authorName: user.name,
+            authorPicture: user.picture
         };
 
         findDOMNode(this.refs['dialog-send-message-input']).value = '';
@@ -360,7 +384,7 @@ export const Dialog = React.createClass({
         const {user} = this.props;
         const classes = classNames({
             "dialog-message-item": true,
-            "own-message": user.id === messageObj.authorId
+            "own-message": user.id === messageObj.authorId || messageObj.id < 0
         });
         let footerContent;
 

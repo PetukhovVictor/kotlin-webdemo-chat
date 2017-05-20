@@ -23,6 +23,7 @@ public class UserController {
     private ModelAndView oAuthError() {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("oauth/fail");
+        modelAndView.addObject("frontendPath", "http://localhost:8081/assets/");
         return modelAndView;
     }
 
