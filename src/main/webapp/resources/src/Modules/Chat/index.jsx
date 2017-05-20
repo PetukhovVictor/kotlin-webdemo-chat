@@ -85,7 +85,6 @@ export const Chat = React.createClass({
      * @param dialog Объект диалога, который нужно отрендерить.
      */
     renderDialogItem (dialog) {
-        const participant = dialog.participants[0];
         const classes = classNames({
             "dialog-item": true,
             "dialog-item-active": dialog === this.state.activeDialog
@@ -98,10 +97,10 @@ export const Chat = React.createClass({
                 key={`dialog${dialog.id}`}
             >
                 <div className="dialog-user-picture">
-                    <img src={participant.picture} alt="" />
+                    <img src={dialog.interlocutorPicture} alt="" />
                 </div>
                 <div className="dialog-user-name">
-                    {participant.name}
+                    {dialog.interlocutorName}
                 </div>
             </div>
         )

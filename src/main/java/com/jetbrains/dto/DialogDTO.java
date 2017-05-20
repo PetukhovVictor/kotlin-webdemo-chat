@@ -1,15 +1,14 @@
 package com.jetbrains.dto;
 
-import com.jetbrains.domain.UserEntity;
-
 import java.sql.Timestamp;
-import java.util.Set;
 
 public class DialogDTO {
     private String title;
     private Timestamp lastUpdateDate;
     private int id;
-    private Set<UserDTO> participants;
+    private int interlocutorId;
+    private String interlocutorName;
+    private String interlocutorPicture;
 
     public String getTitle() {
         return title;
@@ -23,7 +22,15 @@ public class DialogDTO {
         return id;
     }
 
-    public Set<UserDTO> getParticipants() {
-        return participants;
+    public int getInterlocutorId() {
+        return interlocutorId;
+    }
+
+    public String getInterlocutorName() {
+        return interlocutorName;
+    }
+
+    public String getInterlocutorPicture() {
+        return interlocutorPicture;
     }
 }

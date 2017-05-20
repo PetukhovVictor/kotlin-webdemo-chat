@@ -66,7 +66,10 @@ public class UserController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/rest/user_info", method = RequestMethod.GET)
+    @RequestMapping(
+            value = "/rest/user_info",
+            method = RequestMethod.GET,
+            produces = { "application/json;charset=UTF-8" })
     public String userInfo(HttpServletRequest request) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         UserEntity user = (new UserDAO()).getUserBySession(request.getSession());

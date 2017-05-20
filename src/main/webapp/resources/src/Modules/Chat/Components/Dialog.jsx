@@ -321,11 +321,10 @@ export const Dialog = React.createClass({
      */
     renderDialogInfo() {
         const {dialog} = this.props;
-        const participant = dialog.participants[0];
 
         return (
             <div className="dialog-description" key="dialog-info">
-                {participant.name}
+                {dialog.interlocutorName}
             </div>
         )
     },
@@ -334,8 +333,6 @@ export const Dialog = React.createClass({
      * Рендеринг блока для отправки сообщения.
      */
     renderSendMessageBlock() {
-        const {isMessageSending} = this.state;
-
         return (
             <div className="dialog-send-message" key="send-message">
                 <textarea
@@ -363,7 +360,7 @@ export const Dialog = React.createClass({
         const {user} = this.props;
         const classes = classNames({
             "dialog-message-item": true,
-            "own-message": user.id === messageObj.author.id
+            "own-message": user.id === messageObj.authorId
         });
         let footerContent;
 
@@ -387,7 +384,7 @@ export const Dialog = React.createClass({
                 const date = moment(messageObj.date);
                 footerContent = (
                     <span className="dialog-message-footer">
-                        <span>{date.format("hh:mm")}</span>
+                        <span>{date.format("HH:mm")}</span>
                         <span>{date.format("D MMMM YYYY")}</span>
                     </span>
                 )
@@ -396,7 +393,7 @@ export const Dialog = React.createClass({
         return (
             <div className={classes} key={`message${messageObj.id}`}>
                 <div className="dialog-message-user-avatar">
-                    <img src={messageObj.author.picture} alt="" />
+                    <img src={messageObj.authorPicture} alt="" />
                 </div>
                 <div className="dialog-message-text">
                     <span>{messageObj.message}</span>

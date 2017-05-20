@@ -13,6 +13,7 @@ public class DialogMessageEntity {
     private UserEntity author;
 
     @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "id")
     public int getId() {
         return id;

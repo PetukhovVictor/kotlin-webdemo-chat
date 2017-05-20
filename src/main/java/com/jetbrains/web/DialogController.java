@@ -3,18 +3,17 @@ package com.jetbrains.web;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jetbrains.dao.DialogDAO;
-import com.jetbrains.dto.DialogDTO;
 import com.jetbrains.domain.DialogMessageEntity;
 import com.jetbrains.domain.DialogEntity;
 import com.jetbrains.domain.UserEntity;
 import com.jetbrains.dao.UserDAO;
+import com.jetbrains.dto.DialogMessageDTO;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 public class DialogController {
@@ -27,7 +26,10 @@ public class DialogController {
         return mapper.writeValueAsString(dialogs);
     }
 
-    @RequestMapping(value = "/rest/dialog/messages", method = RequestMethod.POST)
+    @RequestMapping(
+            value = "/rest/dialog/messages",
+            method = RequestMethod.POST,
+            produces = { "application/json;charset=UTF-8" })
     public String dialogMessages(HttpServletRequest request) throws JsonProcessingException {
         String dialogIdString = request.getParameter("dialogId");
         if (dialogIdString == null) {
@@ -41,12 +43,15 @@ public class DialogController {
         }
         DialogDAO dialogService = new DialogDAO();
         DialogEntity dialog = dialogService.getDialogById(dialogId);
-        Set<DialogMessageEntity> messages = dialogService.getMessages(dialog);
+        List<DialogMessageDTO> messages = dialogService.getMessages(dialog);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(messages);
     }
 
-    @RequestMapping(value = "/rest/dialog/message/send", method = RequestMethod.POST)
+    @RequestMapping(
+            value = "/rest/dialog/message/send",
+            method = RequestMethod.POST,
+            produces = { "application/json;charset=UTF-8" })
     public String dialogMessageSend(HttpServletRequest request) throws JsonProcessingException {
         String dialogIdString = request.getParameter("dialogId");
         String message = request.getParameter("message");
