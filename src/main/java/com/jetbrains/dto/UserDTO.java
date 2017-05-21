@@ -1,11 +1,11 @@
 package com.jetbrains.dto;
 
 public class UserDTO {
-    private int id;
+    private Integer id;
     private String name;
     private String picture;
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

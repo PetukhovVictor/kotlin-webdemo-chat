@@ -112,6 +112,15 @@ public class GoogleOAuth {
         }
     }
 
+    /**
+     * Получение информации о пользователе из Google аккаунта.
+     *
+     * @param token Токен для доступа к Google API.
+     *
+     * @return Информация о пользователе в формате Google account.
+     *
+     * @throws IOException
+     */
     public static Userinfoplus getUserInfo(String token) throws IOException {
         GoogleCredential credential = new GoogleCredential().setAccessToken(token);
         Oauth2 oauth2 = new Oauth2.Builder(new NetHttpTransport(), new JacksonFactory(), credential)

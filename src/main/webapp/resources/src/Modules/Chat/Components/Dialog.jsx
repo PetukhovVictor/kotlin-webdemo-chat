@@ -354,7 +354,8 @@ export const Dialog = React.createClass({
             this.resizeNewMessageInput(event.target);
             // Не отправляем сообщение, если в очереди уже есть отправляемое сообщение (не завершился запрос).
         } else if (event.keyCode === 13) {
-            this.sendMessage(event.target.value);
+            const message = event.target.value;
+            message && this.sendMessage(message);
             event.preventDefault();
         }
     },
@@ -366,7 +367,7 @@ export const Dialog = React.createClass({
      */
     handleClickSendMessageButton(event) {
         const message = findDOMNode(this.refs['dialog-send-message-input']).value;
-        this.sendMessage(message);
+        message && this.sendMessage(message);
         event.preventDefault();
     },
 

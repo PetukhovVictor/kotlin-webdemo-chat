@@ -1,30 +1,28 @@
 package com.jetbrains.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Set;
 
 @Entity
-@Table(name = "dialogs", schema = "kotlin_webdemo", catalog = "")
+@Table(name = "dialogs", schema = "kotlin_webdemo")
 public class DialogEntity {
-    private int id;
+    private Integer id;
     private Timestamp creationDate;
     private String title;
     private Timestamp lastUpdateDate;
-    private int ownerId;
+    private Integer ownerId;
     private Set<UserEntity> participants;
     private Set<DialogMessageEntity> messages;
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "id")
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -85,11 +83,11 @@ public class DialogEntity {
 
     @Basic
     @Column(name = "owner_id")
-    public int getOwnerId() {
+    public Integer getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(int ownerId) {
+    public void setOwnerId(Integer ownerId) {
         this.ownerId = ownerId;
     }
 
@@ -97,7 +95,7 @@ public class DialogEntity {
         this.participants = participants;
     }
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany
     @JoinTable(
             name = "dialog_participants",
             joinColumns = @JoinColumn(name = "dialog_id"),
@@ -111,7 +109,6 @@ public class DialogEntity {
         this.messages = messages;
     }
 
-    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "dialogId")
     public Set<DialogMessageEntity> getMessages() {
         return this.messages;

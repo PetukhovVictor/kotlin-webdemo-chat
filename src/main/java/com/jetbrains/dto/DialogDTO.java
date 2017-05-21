@@ -5,8 +5,8 @@ import java.sql.Timestamp;
 public class DialogDTO {
     private String title;
     private Timestamp lastUpdateDate;
-    private int id;
-    private int interlocutorId;
+    private Integer id;
+    private Integer interlocutorId;
     private String interlocutorName;
     private String interlocutorPicture;
 
@@ -18,11 +18,11 @@ public class DialogDTO {
         return lastUpdateDate;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public int getInterlocutorId() {
+    public Integer getInterlocutorId() {
         return interlocutorId;
     }
 

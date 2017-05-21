@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "dialog_participants", schema = "kotlin_webdemo", catalog = "")
+@Table(name = "dialog_participants", schema = "kotlin_webdemo")
 public class DialogParticipantEntity {
     private Integer id;
     private Integer dialogId;

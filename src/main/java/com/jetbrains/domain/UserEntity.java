@@ -6,9 +6,9 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "users", schema = "kotlin_webdemo", catalog = "")
+@Table(name = "users", schema = "kotlin_webdemo")
 public class UserEntity {
-    private int id;
+    private Integer id;
     private String email;
     private String name;
     private String picture;
@@ -18,11 +18,11 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "id")
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -95,7 +95,7 @@ public class UserEntity {
     }
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany
     @JoinTable(
             name = "dialog_participants",
             joinColumns = @JoinColumn(name = "participant_id"),
