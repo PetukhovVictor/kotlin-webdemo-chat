@@ -3,6 +3,7 @@ import {findDOMNode} from 'react-dom';
 import {remove} from 'lodash';
 import classNames from 'classNames';
 import moment from 'moment';
+import escapeHtml from 'escape-html';
 
 moment.locale('ru');
 
@@ -69,6 +70,8 @@ export const Dialog = React.createClass({
                 messages: messages
             });
             this.setScrollToBottom();
+            const sendMessageInputElement = findDOMNode(this.refs['dialog-send-message-input']);
+            sendMessageInputElement.focus();
         }).catch(() => {
             this.setState({
                 activeRequest: null
@@ -210,13 +213,14 @@ export const Dialog = React.createClass({
         const messageObj = {
             // Псведо-идентификатор. Он равен отрицательному числу, по модулю равному номеру сообщения в очереди на отправку.
             id: pseudoId,
-            message,
+            message: message,
             authorId: user.id,
             authorName: user.name,
             authorPicture: user.picture
         };
 
-        findDOMNode(this.refs['dialog-send-message-input']).value = '';
+        const sendMessageInputElement = findDOMNode(this.refs['dialog-send-message-input']);
+        sendMessageInputElement.value = '';
 
         this.setState({
             isMessageSending: true,
@@ -352,7 +356,7 @@ export const Dialog = React.createClass({
     renderNotSelectedDialog() {
         return (
             <div className="dialog-empty">
-                Для начала переписки выберите диалог или <a href="#" onClick={this.handleClickNewDialog}>создайте новый</a>.
+                Для начала переписки выберите диалог или <a href="#" onClick={this.handleClickNewDialog}>поищите собеседников</a>.
             </div>
         );
     },
@@ -450,6 +454,7 @@ export const Dialog = React.createClass({
      */
     renderMessages() {
         const {messages, sendingMessages, unsentMessages} = this.state;
+        const numberMessages = messages.length + sendingMessages.length + unsentMessages.length;
         let messageElements = [];
         const renderMessage = (message, type) => {
             messageElements.push(this.renderMessage(message, type));
@@ -461,9 +466,16 @@ export const Dialog = React.createClass({
 
         return (
             <div className="dialog-messages-wrap" ref="dialog-messages-wrap" key="messages">
-                <div className="dialog-messages">
-                    {messageElements}
-                </div>
+                { numberMessages === 0 ? (
+                    <div className="dialog-messages-empty">
+                        Сообщений пока нет.
+                    </div>
+                ) : (
+                        <div className="dialog-messages">
+                            {messageElements}
+                        </div>
+                    )
+                }
             </div>
         );
     },

@@ -6,34 +6,29 @@ import com.jetbrains.domain.DialogMessageEntity;
 import com.jetbrains.domain.DialogEntity;
 import com.jetbrains.domain.UserEntity;
 import com.jetbrains.dto.DialogMessageDTO;
+import com.jetbrains.util.HibernateUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.hibernate.transform.Transformers;
 
 import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DialogDAO {
+    private final static Integer DIALOGS_PER_PAGE = 10;
+    private final static Integer MESSAGES_PER_PAGE = 10;
+
     private Session session;
-    private SessionFactory sessionsFactory;
 
     public DialogDAO() {
-        this.sessionsFactory = new Configuration().configure().buildSessionFactory();
-        this.session = this.sessionsFactory.openSession();
+        this.session = HibernateUtils.getSession();
     }
 
-    protected void finalize() {
-        this.session.close();
-        this.sessionsFactory.close();
-    }
-
-    private ProjectionList getDialogProjections() {
+    static private ProjectionList getDialogProjections() {
         return Projections.projectionList()
                 .add(Projections.property("id"), "id")
                 .add(Projections.property("title"), "title")
@@ -43,7 +38,7 @@ public class DialogDAO {
                 .add(Projections.property("participants.picture"), "interlocutorPicture");
     }
 
-    private ProjectionList getMessageProjections() {
+    static private ProjectionList getMessageProjections() {
         return Projections.projectionList()
                 .add(Projections.property("id"), "id")
                 .add(Projections.property("message"), "message")
@@ -53,13 +48,15 @@ public class DialogDAO {
                 .add(Projections.property("author.picture"), "authorPicture");
     }
 
-    public List<DialogDTO> getDialogs(UserEntity user) {
+    public List<DialogDTO> getDialogs(UserEntity user, Integer page) {
         Criteria criteria = session.createCriteria(DialogEntity.class)
                 .createAlias("participants", "participants")
-                .setProjection(this.getDialogProjections())
+                .setProjection(DialogDAO.getDialogProjections())
                 .add(Restrictions.ne("participants.id", user.getId()))
                 .setResultTransformer(Transformers.aliasToBean(DialogDTO.class))
-                .addOrder(Order.asc("lastUpdateDate"));
+                .addOrder(Order.desc("lastUpdateDate"))
+                .setFirstResult(DialogDAO.DIALOGS_PER_PAGE * (page - 1))
+                .setMaxResults(DialogDAO.DIALOGS_PER_PAGE);
 
         return (List<DialogDTO>) criteria.list();
     }
@@ -70,36 +67,81 @@ public class DialogDAO {
         return (DialogEntity) dialogCriteria.uniqueResult();
     }
 
-    public List<DialogMessageDTO> getMessages(DialogEntity dialog) {
+    public DialogEntity getDialogByParticipants(UserEntity user1, UserEntity user2) {
+        Query dialogCriteria = session.createQuery("select dialogId from DialogParticipantEntity dpe1 where " +
+                "dpe1.dialogId IN (select dpe2.dialogId from DialogParticipantEntity dpe2 where dpe2.participantId = :user2)" +
+                "and dpe1.participantId = :user1");
+        dialogCriteria.setParameter("user1", user1.getId());
+        dialogCriteria.setParameter("user2", user2.getId());
+        Integer dialogId = (Integer)dialogCriteria.uniqueResult();
+        return dialogId == null ? null : this.getDialogById(dialogId);
+    }
+
+    public DialogDTO getDialogDTO(DialogEntity dialog, UserEntity user) {
+        Criteria criteria = session.createCriteria(DialogEntity.class)
+                .createAlias("participants", "participants")
+                .setProjection(DialogDAO.getDialogProjections())
+                .add(Restrictions.ne("participants.id", user.getId()))
+                .add(Restrictions.eq("id", dialog.getId()))
+                .setResultTransformer(Transformers.aliasToBean(DialogDTO.class));
+
+        return (DialogDTO)criteria.uniqueResult();
+    }
+
+    public List<DialogMessageDTO> getMessages(DialogEntity dialog, Integer page) {
         Criteria criteria = session.createCriteria(DialogMessageEntity.class)
                 .createAlias("author", "author")
-                .setProjection(this.getMessageProjections())
+                .setProjection(DialogDAO.getMessageProjections())
                 .add(Restrictions.eq("dialogId", dialog.getId()))
                 .setResultTransformer(Transformers.aliasToBean(DialogMessageDTO.class))
-                .addOrder(Order.asc("date"));
+                .addOrder(Order.desc("date"))
+                .setFirstResult(DialogDAO.MESSAGES_PER_PAGE * (page - 1))
+                .setMaxResults(DialogDAO.MESSAGES_PER_PAGE);
 
         return (List<DialogMessageDTO>) criteria.list();
     }
 
-    public DialogMessageDTO getMessage(DialogMessageEntity message) {
+    public DialogMessageDTO getMessageById(Integer messageId) {
         Criteria criteria = session.createCriteria(DialogMessageEntity.class)
                 .createAlias("author", "author")
-                .setProjection(this.getMessageProjections())
-                .add(Restrictions.eq("id", message.getId()))
+                .setProjection(DialogDAO.getMessageProjections())
+                .add(Restrictions.eq("id", messageId))
                 .setResultTransformer(Transformers.aliasToBean(DialogMessageDTO.class));
 
         return (DialogMessageDTO) criteria.uniqueResult();
     }
 
+    public DialogEntity createDialog(Integer userId1, Integer userId2) {
+        this.session.beginTransaction();
+        UserEntity user1 = new UserDAO().getUserById(userId1);
+        UserEntity user2 = new UserDAO().getUserById(userId2);
+        Set<UserEntity> participants = new HashSet<UserEntity>();
+        participants.add(user1);
+        participants.add(user2);
+
+        Timestamp currentDate = new Timestamp(System.currentTimeMillis());
+
+        DialogEntity dialog = new DialogEntity();
+        dialog.setOwnerId(userId1);
+        dialog.setParticipants(participants);
+        dialog.setCreationDate(currentDate);
+        dialog.setLastUpdateDate(currentDate);
+        this.session.save(dialog);
+        this.session.getTransaction().commit();
+        return dialog;
+    }
+
     public DialogMessageEntity addMessage(DialogEntity dialog, UserEntity user, String message) {
         this.session.beginTransaction();
         Timestamp currentDate = new Timestamp(System.currentTimeMillis());
+
         DialogMessageEntity messageEntity = new DialogMessageEntity();
         messageEntity.setDialogId(dialog.getId());
         messageEntity.setAuthor(user);
         messageEntity.setDate(currentDate);
         messageEntity.setMessage(message);
         dialog.setLastUpdateDate(currentDate);
+
         this.session.save(messageEntity);
         this.session.save(dialog);
         this.session.getTransaction().commit();

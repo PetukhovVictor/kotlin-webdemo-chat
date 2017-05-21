@@ -91,6 +91,32 @@
       margin-left: 15px;
     }
 
+    .dialogs-search-open {
+      display: block;
+      color: #aeaeae;
+      margin-right: 15px;
+      float: right;
+      margin-top: 10px;
+      transition: color .5s ease;
+    }
+
+    .dialogs-search-open:hover {
+      text-decoration: none;
+      color: #808080;
+    }
+
+    .dialogs-search-open:after {
+      font-family: 'icons';
+      content: "\e904";
+      font-size: 12px;
+    }
+
+    .dialogs-empty-search-result {
+      text-align: center;
+      font-size: 12px;
+      padding: 30px 10px;
+    }
+
     .dialogs-search-container {
       .dialogs-search {
         outline: none;
@@ -202,6 +228,14 @@
       overflow-y: auto;
       display: flex;
       align-items: stretch;
+
+      .dialog-messages-empty {
+        margin-top: auto;
+        margin-bottom: auto;
+        text-align: center;
+        width: 100%;
+        font-size: 13px;
+      }
 
       .dialog-messages {
         margin-top: auto;

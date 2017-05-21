@@ -2,26 +2,28 @@ package com.jetbrains.dao;
 
 import com.google.api.services.oauth2.model.Userinfoplus;
 import com.jetbrains.domain.UserEntity;
+import com.jetbrains.dto.UserDTO;
+import com.jetbrains.util.HibernateUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
+import org.hibernate.transform.Transformers;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 public class UserDAO {
     private Session session;
-    private SessionFactory sessionsFactory;
 
-    public UserDAO() {
-        this.sessionsFactory = new Configuration().configure().buildSessionFactory();
-        this.session = this.sessionsFactory.openSession();
+    static private ProjectionList getUserProjections() {
+        return Projections.projectionList()
+                .add(Projections.property("id"), "id")
+                .add(Projections.property("name"), "name")
+                .add(Projections.property("picture"), "picture");
     }
 
-    protected void finalize() {
-        this.session.close();
-        this.sessionsFactory.close();
+    public UserDAO() {
+        this.session = HibernateUtils.getSession();
     }
 
     private UserEntity getUserByColumn(String uniqueColumn, Object value) {
@@ -34,7 +36,7 @@ public class UserDAO {
         return this.getUserByColumn("gid", gid);
     }
 
-    public UserEntity getUserById(int id) {
+    public UserEntity getUserById(Integer id) {
         return this.getUserByColumn("id", id);
     }
 
@@ -48,6 +50,20 @@ public class UserDAO {
 
     public void logout(HttpSession session) {
         session.removeAttribute("user");
+    }
+
+    public List<UserDTO> search(String searchPhrase) {
+        Criteria criteria = session.createCriteria(UserEntity.class)
+                .add(
+                        Restrictions.or(
+                                Restrictions.like("name", searchPhrase, MatchMode.ANYWHERE),
+                                Restrictions.like("email", searchPhrase, MatchMode.EXACT)
+                        )
+                )
+                .setProjection(UserDAO.getUserProjections())
+                .setResultTransformer(Transformers.aliasToBean(UserDTO.class));
+
+        return (List<UserDTO>) criteria.list();
     }
 
     private void signUp(Userinfoplus userInfo) {

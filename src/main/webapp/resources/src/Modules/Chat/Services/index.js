@@ -5,6 +5,7 @@ import SockJS from 'sockjs-client';
 const USER_INFO_REST = "/rest/user_info";
 const DIALOGS_REST = "/rest/dialogs";
 const DIALOGS_SEARCH_REST = "/rest/dialogs/search";
+const DIALOG_CREATE = "/rest/dialog/create";
 const DIALOG_MESSAGES_REST = "/rest/dialog/messages";
 const DIALOG_SEND_MESSAGE_REST = "/rest/dialog/message/send";
 const DIALOG_MESSAGES_ENDPOINT = "/message/send";
@@ -124,6 +125,25 @@ export const ChatServices = {
             credentials: 'include',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: queryString.stringify({ phrase: value })
+        }).then(
+            response => {
+                if (!response.ok) {
+                    throw 'Error dialogs loading!';
+                }
+                return response.json();
+            },
+            () => {
+                throw 'Error send message!';
+            }
+        )
+    },
+
+    createDialog (interlocutorId) {
+        return fetch(DIALOG_CREATE, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: queryString.stringify({ interlocutorId })
         }).then(
             response => {
                 if (!response.ok) {

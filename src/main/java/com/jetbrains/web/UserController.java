@@ -6,7 +6,7 @@ import com.google.api.services.oauth2.model.Userinfoplus;
 import com.jetbrains.domain.UserEntity;
 import com.jetbrains.dao.GoogleOAuth;
 import com.jetbrains.dao.UserDAO;
-import com.jetbrains.util.UrlString;
+import com.jetbrains.util.Url;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -48,12 +48,12 @@ public class UserController {
 
     @RequestMapping(value = "/oauth2callback", method = RequestMethod.GET)
     public ModelAndView login(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String requestUrl = UrlString.getFullUrl(request);
+        String requestUrl = Url.getFullUrl(request);
         // Валидируем строку запроса на наличие code.
         if (!GoogleOAuth.codeValidate(requestUrl)) {
             return oAuthError();
         }
-        String requestBaseUrl = UrlString.getBaseUrl(request);
+        String requestBaseUrl = Url.getBaseUrl(request);
         String code = request.getParameter("code");
         String token = GoogleOAuth.requestAccessToken(requestBaseUrl, code);
         if (token == null) {

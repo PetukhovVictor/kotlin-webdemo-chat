@@ -18,6 +18,7 @@
     <mapping class="com.jetbrains.domain.UserEntity" />
     <mapping class="com.jetbrains.domain.DialogEntity" />
     <mapping class="com.jetbrains.domain.DialogMessageEntity" />
+    <mapping class="com.jetbrains.domain.DialogParticipantEntity" />
 
   </session-factory>
 </hibernate-configuration>

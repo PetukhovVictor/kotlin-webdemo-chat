@@ -18,6 +18,7 @@ public class DialogEntity {
     private Set<DialogMessageEntity> messages;
 
     @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "id")
     public int getId() {
         return id;

@@ -21,6 +21,7 @@ export const Chat = React.createClass({
     /**
      * Начальное состояние компонента.
      *
+     * searchResult - результаты поиска (список найденных пользователей).
      * searchMode - флаг, указывающий на то, включен ли режим поиска.
      * searchTimer - переменная для хранения таймера от окончания ввода поисковой фразы до запуска поиска.
      * isLoading - флаг, указывающий на то, загружается ли список диалогов в настоящий момент.
@@ -30,6 +31,7 @@ export const Chat = React.createClass({
      */
     getInitialState () {
         return {
+            searchResult: null,
             searchMode: false,
             searchTimer: null,
             isLoading: true,
@@ -88,18 +90,51 @@ export const Chat = React.createClass({
      * @param value Поисковая фраза.
      */
     search (value) {
-        ChatServices.search(value);
+        ChatServices.search(value).then(users => {
+            this.setState({ searchResult: users });
+        });
+    },
+
+    /**
+     * Очистка результатов поиска.
+     */
+    clearSearchResult () {
+        this.setState({ searchResult: null });
+    },
+
+    /**
+     * Создание нового диалога.
+     *
+     * @param interlocutorId Идентификатор собеседника.
+     */
+    createDialog (interlocutorId) {
+        return ChatServices.createDialog(interlocutorId);
+    },
+
+    /**
+     * Добавление далога в список диалогов.
+     *
+     * @param dialog Добавляемый диалог.
+     */
+    addDialog (dialog) {
+        let {dialogs} = this.state;
+
+        dialogs.unshift(dialog);
+        this.setState({ dialogs });
     },
 
     /**
      * Обработка активации режима поиска собеседников.
      * В режиме поиска в блоке со списком диалогов вместо заголовка показывается поле для ввода поисковой фразы.
+     *
+     * @param event Объект события Click.
      */
-    handleOnSearch () {
+    handleOnSearch (event) {
         this.setState({ searchMode: true }, () => {
             const searchInput = findDOMNode(this.refs['dialogs-search-input']);
             searchInput.focus();
         });
+        event !== undefined && event.preventDefault();
     },
 
     /**
@@ -120,8 +155,19 @@ export const Chat = React.createClass({
      */
     handleClickDialog (dialog, event) {
         const {activeDialog} = this.state;
+        const isPseudoDialog = dialog.id < 0;
 
-        activeDialog !== dialog && this.setState({ activeDialog: dialog });
+        if (activeDialog !== dialog) {
+            if (isPseudoDialog) {
+                this.createDialog(Math.abs(dialog.id)).then((dialog) => {
+                    this.addDialog(dialog);
+                    this.setState({ activeDialog: dialog, searchMode: false });
+                    this.clearSearchResult();
+                });
+            } else {
+                this.setState({ activeDialog: dialog });
+            }
+        }
         event.preventDefault();
     },
 
@@ -131,6 +177,7 @@ export const Chat = React.createClass({
      * @param event Объект события Click.
      */
     handleClickCloseSearchDialogs (event) {
+        this.clearSearchResult();
         this.setState({ searchMode: false });
         event.preventDefault();
     },
@@ -145,7 +192,10 @@ export const Chat = React.createClass({
         const value = event.target.value;
 
         searchTimer !== null && clearTimeout(searchTimer);
-
+        if (!value) {
+            this.clearSearchResult();
+            return;
+        }
         const timer = setTimeout(() => this.search(value), this.searchTimeout);
         this.setState({ searchTimer: timer });
     },
@@ -192,6 +242,30 @@ export const Chat = React.createClass({
     },
 
     /**
+     * Рендеринг результатов поиска (списка пользователей).
+     */
+    renderSearchResult () {
+        const {searchResult} = this.state;
+        let dialogElements = [];
+
+        searchResult.map(user => {
+            const pseudoDialog = {
+                id: -user.id,
+                interlocutorId: user.id,
+                interlocutorName: user.name,
+                interlocutorPicture: user.picture
+            };
+            dialogElements.push(this.renderDialogItem(pseudoDialog));
+        });
+
+        return searchResult.length === 0 ? (
+            <div className="dialogs-empty-search-result">
+                По запросу пользователей не найдено.
+            </div>
+        ) : dialogElements;
+    },
+
+    /**
      * Рендеринг мини-блока с информацией о пользователе.
      */
     renderUserInfo () {
@@ -221,9 +295,10 @@ export const Chat = React.createClass({
                 <input type="text" ref="dialogs-search-input" onChange={this.handleChangeSearchPhrase} className="dialogs-search" />
                 <a href="#" onClick={this.handleClickCloseSearchDialogs} className="dialogs-search-close" />
             </div>
-        ) : (
+        ) : [
+            <a href="#" onClick={this.handleOnSearch} className="dialogs-search-open" />,
             <h2>Диалоги</h2>
-        );
+        ];
     },
 
     /**
@@ -231,13 +306,13 @@ export const Chat = React.createClass({
      * В зависимости от состояния загрузки рендерим либо лоадер, либо список диалогов.
      */
     render () {
-        const {isLoading, dialogs, activeDialog, user} = this.state;
+        const {isLoading, dialogs, activeDialog, user, searchResult} = this.state;
         let content;
 
         if (isLoading) {
             content = <div className="dialogs-loading">Загрузка...</div>;
         } else if (dialogs !== null) {
-            content = this.renderDialogs();
+            content = searchResult !== null ? this.renderSearchResult() : this.renderDialogs();
         } else {
             content = (
                 <div className="dialogs-loading">
