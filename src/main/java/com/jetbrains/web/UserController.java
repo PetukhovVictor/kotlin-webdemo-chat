@@ -20,6 +20,11 @@ import java.io.IOException;
 
 @Controller
 public class UserController {
+    /**
+     * Генерация представления страницы с ошибкой авторизации.
+     *
+     * @return Сгенерированное представление.
+     */
     private ModelAndView oAuthError() {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("oauth/fail");
@@ -27,12 +32,20 @@ public class UserController {
         return modelAndView;
     }
 
+    /**
+     * Обработка перехода на страницу авторизации.
+     * Осуществляется переброс пользователя на страницу авторизации через Google аккаунт.
+     */
     @RequestMapping(value = "/authorize", method = RequestMethod.GET)
     public void authorize(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String url = GoogleOAuth.generateAuthorizeUrl(request.getRequestURL().toString());
         response.sendRedirect(url);
     }
 
+    /**
+     * Обработка перехода на страницу выхода пользователя из системы.
+     * После очистки сессии осуществляет редирект на главную страницу.
+     */
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
@@ -46,6 +59,9 @@ public class UserController {
         response.sendRedirect("/");
     }
 
+    /**
+     * Обработка перехода на страницу авторизации внутри приложения после авторизации на стороне Google.
+     */
     @RequestMapping(value = "/oauth2callback", method = RequestMethod.GET)
     public ModelAndView login(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String requestUrl = Url.getFullUrl(request);
@@ -60,12 +76,14 @@ public class UserController {
             return oAuthError();
         }
         Userinfoplus userInfo = GoogleOAuth.getUserInfo(token);
-        UserDAOImpl user = new UserDAOImpl();
-        user.sign(userInfo, request.getSession());
+        new UserDAOImpl().sign(userInfo, request.getSession());
         response.sendRedirect("/");
         return null;
     }
 
+    /**
+     * Рест-метод получения информации о текущем пользователе.
+     */
     @ResponseBody
     @RequestMapping(
             value = "/rest/user_info",

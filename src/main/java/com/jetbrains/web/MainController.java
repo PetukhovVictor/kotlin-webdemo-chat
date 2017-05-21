@@ -11,7 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 
 @Controller
 public class MainController {
-
+    /**
+     * Обработка запроса главной страницы приложения.
+     */
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ModelAndView main(HttpServletRequest request) {
         UserDAOImpl user = new UserDAOImpl();
