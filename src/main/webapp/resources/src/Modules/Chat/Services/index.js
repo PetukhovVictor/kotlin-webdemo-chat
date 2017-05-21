@@ -65,15 +65,17 @@ export const ChatServices = {
      * Получение списка сообщение диалога.
      *
      * @param dialogId ID диалога, сообщения которого необходимо загрузить.
+     * @param lastMessageId Идентификатор последнего загруженного сообщения (определяет порцию подгружаемых собщений).
      *
      * @returns Promise со списком сообщений диалога.
      */
-    loadMessages (dialogId) {
+    loadMessages (dialogId, lastMessageId) {
+        lastMessageId = lastMessageId || 0;
         return fetch(DIALOG_MESSAGES_REST, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: queryString.stringify({ dialogId })
+            body: queryString.stringify({ dialogId, lastMessageId })
         }).then(
             response => {
                 if (!response.ok) {

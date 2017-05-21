@@ -36,19 +36,14 @@ public class DialogController {
             method = RequestMethod.GET,
             produces = { "application/json;charset=UTF-8" })
     public String dialogs(HttpServletRequest request) throws JsonProcessingException {
-        Integer page;
-        try {
-            String pageParam = request.getParameter("page");
-            if (pageParam == null) {
-                pageParam = "1";
-            }
-            page = Integer.parseInt(pageParam);
-        } catch (NumberFormatException e) {
-            return null;
+        Integer lastDialogId = Url.getIntegerParam(request, "lastDialogId");
+        if (lastDialogId == null) {
+            lastDialogId = 0;
         }
+
         ObjectMapper mapper = new ObjectMapper();
         UserEntity user = (new UserDAO()).getUserBySession(request.getSession());
-        List dialogs = (new DialogDAO()).getDialogs(user, page);
+        List dialogs = (new DialogDAO()).getDialogs(user, lastDialogId);
         return mapper.writeValueAsString(dialogs);
     }
 
@@ -71,17 +66,20 @@ public class DialogController {
             method = RequestMethod.POST,
             produces = { "application/json;charset=UTF-8" })
     public String dialogMessages(HttpServletRequest request) throws JsonProcessingException {
-        Integer page = Url.getPageParam(request);
+        Integer lastMessageId = Url.getIntegerParam(request, "lastMessageId");
         Integer dialogId = Url.getIntegerParam(request, "dialogId");
-        if (page == null || dialogId == null) {
+        if (dialogId == null) {
             return null;
+        }
+        if (lastMessageId == null) {
+            lastMessageId = 0;
         }
         DialogDAO dialogService = new DialogDAO();
         DialogEntity dialog = dialogService.getDialogById(dialogId);
         if (dialog == null) {
             return null;
         }
-        List<DialogMessageDTO> messages = dialogService.getMessages(dialog, page);
+        List<DialogMessageDTO> messages = dialogService.getMessages(dialog, lastMessageId);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(messages);
     }

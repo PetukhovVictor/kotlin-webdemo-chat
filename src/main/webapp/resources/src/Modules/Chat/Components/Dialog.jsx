@@ -1,13 +1,20 @@
 import * as React from 'react';
 import {findDOMNode} from 'react-dom';
-import {remove} from 'lodash';
+import {remove, reverse} from 'lodash';
 import classNames from 'classNames';
 import moment from 'moment';
-import escapeHtml from 'escape-html';
+
+import {ChatServices} from '../Services'
 
 moment.locale('ru');
 
-import {ChatServices} from '../Services'
+/**
+ * Максимальная позиция скролла в блоке с сообщениями,
+ * при которой осуществляется подгрузка предыдущей порции сообщений.
+ *
+ * @type {number}
+ */
+const MAX_SCROLL_POSITION_FOR_MESSAGE_LOADING = 10;
 
 /**
  * Компонент диалога realtime-чата.
@@ -34,6 +41,9 @@ export const Dialog = React.createClass({
     /**
      * Начальное состояние компонента.
      *
+     * allMessagesLoaded - флаг показывающий, требуется ли подгрузка сообщений.
+     *      Устанавливает в true, когда последний запрос на подгрузку вернул пустой результат.
+     * activeAdditionalRequest - активный запрос (его наличие говорит о продолжающейся подгрузке порции сообщений).
      * activeRequest - активный запрос (его наличие говорит о продолжающейся загрузке списка сообщений).
      * messages - список сообщений выбранного диалога.
      * sendingMessagesCounter - счетчик отправляемых сообщений (используется для временной идентификации сообщений).
@@ -48,6 +58,8 @@ export const Dialog = React.createClass({
      */
     getInitialState () {
         return {
+            allMessagesLoaded: false,
+            activeAdditionalRequest: null,
             activeRequest: null,
             messages: null,
             sendingMessagesCounter: 0,
@@ -62,23 +74,36 @@ export const Dialog = React.createClass({
      * Загрузка списка сообщений выбранного диалога.
      *
      * @param dialogId ID диалога, сообщения которого необходимо загрузить.
+     * @param lastMessageId Идентификатор последнего загруженного сообщения (определяет порцию подгружаемых собщений).
      */
-    loadMessages (dialogId) {
-        const request = ChatServices.loadMessages(dialogId).then(messages => {
-            this.setState({
-                activeRequest: null,
-                messages: messages
-            });
-            this.setScrollToBottom();
+    loadMessages (dialogId, lastMessageId) {
+        lastMessageId = lastMessageId || 0;
+        const isAdditionalLoading = lastMessageId !== 0;
+        const targetRequest = lastMessageId === 0 ? 'activeRequest' : 'activeAdditionalRequest';
+        const request = ChatServices.loadMessages(dialogId, lastMessageId).then(messages => {
+            let stateObj = {
+                [targetRequest]: null,
+                messages: isAdditionalLoading ? reverse(messages).concat(this.state.messages) : reverse(messages)
+            };
+            if (messages.length === 0) {
+                stateObj.allMessagesLoaded = true;
+            }
+            if (isAdditionalLoading) {
+                const currentScrollPosition = this.getScrollBottom();
+                this.setState(stateObj, () => this.setScrollBottom(currentScrollPosition));
+            } else {
+                // Скроллим блок к низу только если осущетвлялась первая загрузка сообщений.
+                this.setState(stateObj, this.setScrollBottom);
+            }
             const sendMessageInputElement = findDOMNode(this.refs['dialog-send-message-input']);
             sendMessageInputElement.focus();
         }).catch(() => {
             this.setState({
-                activeRequest: null
+                [targetRequest]: null
             });
         });
 
-        this.setState({ activeRequest: request });
+        this.setState({ [targetRequest]: request });
     },
 
     /**
@@ -89,10 +114,11 @@ export const Dialog = React.createClass({
      * @param nextProps Новые props компонента.
      */
     componentWillReceiveProps(nextProps) {
+        const {activeRequest, activeAdditionalRequest} = this.state;
+
         if (nextProps.dialog !== this.props.dialog) {
-            if (this.state.activeRequest !== null) {
-                this.state.activeRequest.terminate();
-            }
+            activeRequest !== null && activeRequest.terminate();
+            activeAdditionalRequest !== null && activeAdditionalRequest.terminate();
             this.setState(this.getInitialState());
             this.loadMessages(nextProps.dialog.id);
             ChatServices.subscribeMessages(nextProps.dialog.id, this.receiveMessage);
@@ -100,12 +126,25 @@ export const Dialog = React.createClass({
     },
 
     /**
-     * Осуществляем прокрутку списка сообщений в самый низ (чтобы видеть самые последние сообщения).
-     * Прокрутка осуществляется при выборе диалога и при отправке/получении сообщения.
+     * Получение позиции скролла относительно нижней границы.
+     *
+     * @returns {number} Позиция скролла относительно нижней границы.
      */
-    setScrollToBottom() {
+    getScrollBottom() {
         const dialogMessagesWrapElement = findDOMNode(this.refs['dialog-messages-wrap']);
-        dialogMessagesWrapElement.scrollTop = dialogMessagesWrapElement.scrollHeight;
+        return dialogMessagesWrapElement.scrollHeight - dialogMessagesWrapElement.scrollTop;
+    },
+
+    /**
+     * Осуществляем прокрутку списка сообщений в заданную позицию относительно нижней границы.
+     * Прокрутка осуществляется при выборе диалога и при отправке/получении сообщения.
+     * 
+     * @param scrollPosition Позиция скролла относительно нижней границы.
+     */
+    setScrollBottom(scrollPosition) {
+        scrollPosition = scrollPosition || 0;
+        const dialogMessagesWrapElement = findDOMNode(this.refs['dialog-messages-wrap']);
+        dialogMessagesWrapElement.scrollTop = dialogMessagesWrapElement.scrollHeight - scrollPosition;
     },
 
     /**
@@ -159,7 +198,7 @@ export const Dialog = React.createClass({
         messages.push(message);
         this.setState(
             { messages, sendingMessages },
-            () => this.setScrollToBottom()
+            () => this.setScrollBottom()
         );
         this.props.dialogOnTop();
     },
@@ -176,7 +215,7 @@ export const Dialog = React.createClass({
         unsentMessages.push(unsentMessage[0]);
         this.setState(
             { unsentMessages, sendingMessages },
-            () => this.setScrollToBottom()
+            () => this.setScrollBottom()
         );
     },
 
@@ -195,7 +234,7 @@ export const Dialog = React.createClass({
         messages.push(messageObj);
         this.setState(
             { messages },
-            () => this.setScrollToBottom()
+            () => this.setScrollBottom()
         );
         dialogOnTop();
     },
@@ -230,7 +269,7 @@ export const Dialog = React.createClass({
             ],
             sendingMessagesCounter: sendingMessagesCounter + 1
             // По окончании рендеринга вслед за обновлением state скроллим блок с сообщениями к низу.
-        }, () => this.setScrollToBottom());
+        }, () => this.setScrollBottom());
 
         // Добавляем запрос на отправку сообщения в очередь.
         this.addSendMessageRequestInQueue(() => {
@@ -339,6 +378,23 @@ export const Dialog = React.createClass({
     handleClickNewDialog(event) {
         this.props.onSearch();
         event.preventDefault();
+    },
+
+    /**
+     * Обработка скроллирования блока с сообщениями.
+     *
+     * @param event Объект события Scroll.
+     */
+    handleScrollMessageBlock(event) {
+        const scrollPosition = event.target.scrollTop;
+
+        if (scrollPosition <= MAX_SCROLL_POSITION_FOR_MESSAGE_LOADING) {
+            const {activeAdditionalRequest, messages, allMessagesLoaded} = this.state;
+            if (activeAdditionalRequest === null && messages.length !== 0 && !allMessagesLoaded) {
+                const lastMessageId = messages[0].id;
+                this.loadMessages(this.props.dialog.id, lastMessageId);
+            }
+        }
     },
 
     /**
@@ -465,7 +521,7 @@ export const Dialog = React.createClass({
         unsentMessages.map(message => renderMessage(message, 'unsent'));
 
         return (
-            <div className="dialog-messages-wrap" ref="dialog-messages-wrap" key="messages">
+            <div className="dialog-messages-wrap" onScroll={this.handleScrollMessageBlock} ref="dialog-messages-wrap" key="messages">
                 { numberMessages === 0 ? (
                     <div className="dialog-messages-empty">
                         Сообщений пока нет.

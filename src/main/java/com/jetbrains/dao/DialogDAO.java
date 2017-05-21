@@ -48,15 +48,18 @@ public class DialogDAO {
                 .add(Projections.property("author.picture"), "authorPicture");
     }
 
-    public List<DialogDTO> getDialogs(UserEntity user, Integer page) {
+    public List<DialogDTO> getDialogs(UserEntity user, Integer lastDialogId) {
         Criteria criteria = session.createCriteria(DialogEntity.class)
                 .createAlias("participants", "participants")
                 .setProjection(DialogDAO.getDialogProjections())
                 .add(Restrictions.ne("participants.id", user.getId()))
                 .setResultTransformer(Transformers.aliasToBean(DialogDTO.class))
                 .addOrder(Order.desc("lastUpdateDate"))
-                .setFirstResult(DialogDAO.DIALOGS_PER_PAGE * (page - 1))
+                .addOrder(Order.desc("id"))
                 .setMaxResults(DialogDAO.DIALOGS_PER_PAGE);
+        if (lastDialogId != 0) {
+            criteria.add(Restrictions.lt("id", lastDialogId));
+        }
 
         return (List<DialogDTO>) criteria.list();
     }
@@ -88,15 +91,18 @@ public class DialogDAO {
         return (DialogDTO)criteria.uniqueResult();
     }
 
-    public List<DialogMessageDTO> getMessages(DialogEntity dialog, Integer page) {
+    public List<DialogMessageDTO> getMessages(DialogEntity dialog, Integer lastMessageId) {
         Criteria criteria = session.createCriteria(DialogMessageEntity.class)
                 .createAlias("author", "author")
                 .setProjection(DialogDAO.getMessageProjections())
                 .add(Restrictions.eq("dialogId", dialog.getId()))
                 .setResultTransformer(Transformers.aliasToBean(DialogMessageDTO.class))
                 .addOrder(Order.desc("date"))
-                .setFirstResult(DialogDAO.MESSAGES_PER_PAGE * (page - 1))
+                .addOrder(Order.desc("id"))
                 .setMaxResults(DialogDAO.MESSAGES_PER_PAGE);
+        if (lastMessageId != 0) {
+            criteria.add(Restrictions.lt("id", lastMessageId));
+        }
 
         return (List<DialogMessageDTO>) criteria.list();
     }
