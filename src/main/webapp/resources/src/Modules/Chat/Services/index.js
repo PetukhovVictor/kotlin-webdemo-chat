@@ -117,7 +117,7 @@ export const ChatServices = {
     },
 
     /**
-     * Осуществление поиска собеседников (по имени, либо по email).
+     * Осуществление поиска собеседников (по имени и по email).
      *
      * @param value Поисковая фраза.
      */
@@ -140,6 +140,11 @@ export const ChatServices = {
         )
     },
 
+    /**
+     * Создание диалога.
+     *
+     * @param interlocutorId ID собеседника, с которым необходимо создать диалог.
+     */
     createDialog (interlocutorId) {
         return fetch(DIALOG_CREATE, {
             method: 'POST',
