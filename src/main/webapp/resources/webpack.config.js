@@ -34,8 +34,8 @@ const webpackConfig = {
             }
         ]
     },
-    /**
-     * С помощью CommonChunkPlugin можно будет разбить на несколько фрагментов сборки.
+    /*
+     * TODO: С помощью CommonChunkPlugin разбить на несколько фрагментов сборки.
      */
     plugins: [
         new CopyWebpackPlugin([
