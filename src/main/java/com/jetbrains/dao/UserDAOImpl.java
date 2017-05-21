@@ -96,6 +96,17 @@ public class UserDAOImpl extends DAO implements UserDAO {
     }
 
     /**
+     * Проверка, существует ли пользователь.
+     *
+     * @param userId ID пользователя.
+     *
+     * @return Флаг, показывающий, существует ли пользователь с переданным ID.
+     */
+    public boolean existUser(Integer userId) {
+        return this._getUserByUniqueField("id", userId) != null;
+    }
+
+    /**
      * Получение текущего пользователя (по сессии).
      *
      * @param session Обьект сессии.

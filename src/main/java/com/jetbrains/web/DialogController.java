@@ -6,11 +6,15 @@ import com.jetbrains.dao.DialogDAOImpl;
 import com.jetbrains.dao.UserDAOImpl;
 import com.jetbrains.dto.DialogDTO;
 import com.jetbrains.dto.UserDTO;
+import com.jetbrains.util.ResponseError;
+import com.jetbrains.util.UrlUtils;
+import com.jetbrains.web.errors.ResponseErrors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -22,11 +26,13 @@ public class DialogController {
             value = "/rest/dialogs",
             method = RequestMethod.GET,
             produces = { "application/json;charset=UTF-8" })
-    public String dialogs(HttpServletRequest request) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
+    public String getDialogs(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
         UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
+        if (user == null) {
+            return new ResponseError(ResponseErrors.NOT_AUTHORIZED, response).toString();
+        }
         List dialogs = new DialogDAOImpl().getDialogs(user.getId());
-        return mapper.writeValueAsString(dialogs);
+        return new ObjectMapper().writeValueAsString(dialogs);
     }
 
     /**
@@ -36,40 +42,42 @@ public class DialogController {
             value = "/rest/dialogs/search",
             method = RequestMethod.POST,
             produces = { "application/json;charset=UTF-8" })
-    public String dialogsSearch(HttpServletRequest request) throws JsonProcessingException {
+    public String dialogsSearch(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
+        if (user == null) {
+            return new ResponseError(ResponseErrors.NOT_AUTHORIZED, response).toString();
+        }
         String searchPhrase = request.getParameter("phrase");
         if (searchPhrase == null) {
-            return null;
+            return new ResponseError(ResponseErrors.SEARCH_PHRASE_NOT_SPECIFIED, response).toString();
         }
-        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
         List<UserDTO> users = new UserDAOImpl().searchUserByNameOrEmailWithExclude(searchPhrase, user.getId());
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(users);
+        return new ObjectMapper().writeValueAsString(users);
     }
 
     /**
      * Рест-метод для создания диалога.
-     * В случае, диалог между двумя пользователями уже есть, возвращает он.
+     * В случае, диалог между двумя пользователями уже есть, возвращается он.
      */
     @RequestMapping(
             value = "/rest/dialog/create",
             method = RequestMethod.POST,
             produces = { "application/json;charset=UTF-8" })
-    public String dialogCreate(HttpServletRequest request) throws JsonProcessingException {
-        Integer interlocutorId;
-        try {
-            interlocutorId = Integer.parseInt(request.getParameter("interlocutorId"));
-        } catch (NumberFormatException e) {
-            return null;
+    public String dialogCreate(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+        UserDAOImpl userDao = new UserDAOImpl();
+        UserDTO user = userDao.getCurrentUser(request.getSession());
+        if (user == null) {
+            return new ResponseError(ResponseErrors.NOT_AUTHORIZED, response).toString();
         }
-        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
+        Integer interlocutorId = UrlUtils.getIntegerParam(request, "interlocutorId");
+        if (interlocutorId == null || user.getId().equals(interlocutorId) || !userDao.existUser(interlocutorId)) {
+            return new ResponseError(ResponseErrors.INCORRECT_INTERLOCUTOR_ID, response).toString();
+        }
         DialogDAOImpl dialogService = new DialogDAOImpl();
-
         DialogDTO dialog = dialogService.getDialogByParticipants(interlocutorId, user.getId());
         if (dialog == null) {
             dialog = dialogService.createDialog(user.getId(), Math.abs(interlocutorId));
         }
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(dialog);
+        return new ObjectMapper().writeValueAsString(dialog);
     }
 }

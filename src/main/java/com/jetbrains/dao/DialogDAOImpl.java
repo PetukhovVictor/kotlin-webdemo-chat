@@ -84,6 +84,25 @@ public class DialogDAOImpl extends DAO implements DialogDAO {
     }
 
     /**
+     * Проверка доступа заданного пользователя к диалогу (проверка на принадлежность к списку участников).
+     *
+     * @param dialogId ID диалога.
+     * @param userId ID пользователя.
+     *
+     * @return Флаг, показывающий, доступен ли заданный диалог для заданного пользователя.
+     */
+    public boolean dialogCheckAccess(Integer dialogId, Integer userId) {
+        Criteria dialogCriteria = this.session.createCriteria(DialogEntity.class)
+                .setProjection(DialogDAOImpl.getDialogProjections())
+                .createAlias("participants", "participants")
+                .add(Restrictions.eq("id", dialogId))
+                .add(Restrictions.eq("participants.id", userId))
+                .setResultTransformer(Transformers.aliasToBean(DialogDTO.class));
+
+        return dialogCriteria.uniqueResult() != null;
+    }
+
+    /**
      * Получение диалога по ID и ID собеседника.
      * Возвращается проекция диалога, содержащая в том числе информацию о собеседнике.
      *

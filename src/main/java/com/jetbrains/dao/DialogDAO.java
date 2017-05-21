@@ -24,6 +24,16 @@ public interface DialogDAO {
     DialogDTO getDialogById(Integer dialogId);
 
     /**
+     * Проверка доступа заданного пользователя к диалогу (проверка на принадлежность к списку участников).
+     *
+     * @param dialogId ID диалога.
+     * @param userId ID пользователя.
+     *
+     * @return Флаг, показывающий, доступен ли заданный диалог для заданного пользователя.
+     */
+    boolean dialogCheckAccess(Integer dialogId, Integer userId);
+
+    /**
      * Получение диалога по ID и ID собеседника.
      * Возвращается проекция диалога, содержащая в том числе информацию о собеседнике.
      *

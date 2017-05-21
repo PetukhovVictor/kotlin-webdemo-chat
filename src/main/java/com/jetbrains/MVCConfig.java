@@ -11,7 +11,7 @@ import org.springframework.web.servlet.view.JstlView;
 @Configuration
 @EnableWebMvc
 @ComponentScan
-public class MvcConfiguration extends WebMvcConfigurerAdapter
+public class MVCConfig extends WebMvcConfigurerAdapter
 {
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry) {

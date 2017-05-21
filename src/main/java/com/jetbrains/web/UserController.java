@@ -3,10 +3,13 @@ package com.jetbrains.web;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.services.oauth2.model.Userinfoplus;
+import com.jetbrains.AppConfig;
 import com.jetbrains.dto.UserDTO;
-import com.jetbrains.util.GoogleOAuth;
+import com.jetbrains.util.GoogleOAuthUtils;
 import com.jetbrains.dao.UserDAOImpl;
-import com.jetbrains.util.Url;
+import com.jetbrains.util.ResponseError;
+import com.jetbrains.util.UrlUtils;
+import com.jetbrains.web.errors.ResponseErrors;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,7 +31,7 @@ public class UserController {
     private ModelAndView oAuthError() {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("oauth/fail");
-        modelAndView.addObject("frontendPath", "http://localhost:8081/assets/");
+        modelAndView.addObject("frontendPath", AppConfig.FRONTEND_PATH);
         return modelAndView;
     }
 
@@ -38,7 +41,7 @@ public class UserController {
      */
     @RequestMapping(value = "/authorize", method = RequestMethod.GET)
     public void authorize(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String url = GoogleOAuth.generateAuthorizeUrl(request.getRequestURL().toString());
+        String url = GoogleOAuthUtils.generateAuthorizeUrl(request.getRequestURL().toString());
         response.sendRedirect(url);
     }
 
@@ -50,13 +53,12 @@ public class UserController {
     public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
         UserDAOImpl user = new UserDAOImpl();
-        UserDTO userInfo = user.getCurrentUser(session);
-        if (userInfo == null) {
-            response.sendRedirect("/");
+        if (user.getCurrentUser(session) == null) {
+            response.sendRedirect(AppConfig.APP_INDEX_PAGE);
             return;
         }
         user.logout(session);
-        response.sendRedirect("/");
+        response.sendRedirect(AppConfig.APP_INDEX_PAGE);
     }
 
     /**
@@ -64,20 +66,20 @@ public class UserController {
      */
     @RequestMapping(value = "/oauth2callback", method = RequestMethod.GET)
     public ModelAndView login(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String requestUrl = Url.getFullUrl(request);
+        String requestUrl = UrlUtils.getFullUrl(request);
         // Валидируем строку запроса на наличие code.
-        if (!GoogleOAuth.codeValidate(requestUrl)) {
+        if (!GoogleOAuthUtils.codeValidate(requestUrl)) {
             return oAuthError();
         }
-        String requestBaseUrl = Url.getBaseUrl(request);
+        String requestBaseUrl = UrlUtils.getBaseUrl(request);
         String code = request.getParameter("code");
-        String token = GoogleOAuth.requestAccessToken(requestBaseUrl, code);
+        String token = GoogleOAuthUtils.requestAccessToken(requestBaseUrl, code);
         if (token == null) {
             return oAuthError();
         }
-        Userinfoplus userInfo = GoogleOAuth.getUserInfo(token);
+        Userinfoplus userInfo = GoogleOAuthUtils.getUserInfo(token);
         new UserDAOImpl().sign(userInfo, request.getSession());
-        response.sendRedirect("/");
+        response.sendRedirect(AppConfig.APP_INDEX_PAGE);
         return null;
     }
 
@@ -89,9 +91,11 @@ public class UserController {
             value = "/rest/user_info",
             method = RequestMethod.GET,
             produces = { "application/json;charset=UTF-8" })
-    public String userInfo(HttpServletRequest request) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
+    public String userInfo(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
         UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
-        return mapper.writeValueAsString(user);
+        if (user == null) {
+            return new ResponseError(ResponseErrors.NOT_AUTHORIZED, response).toString();
+        }
+        return new ObjectMapper().writeValueAsString(user);
     }
 }

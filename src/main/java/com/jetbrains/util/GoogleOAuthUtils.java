@@ -16,7 +16,7 @@ import java.util.Arrays;
  * Осуществление авторизации пользователя через Google-аккаунт по oAuth2.
  * Используется библиотека google-oauth-client.
  */
-public class GoogleOAuth {
+public class GoogleOAuthUtils {
     /**
      * Ключевой URL, используемый при авторизации.
      */
@@ -55,7 +55,7 @@ public class GoogleOAuth {
      */
     private static String getRedirectUri(String requestUrl) {
         GenericUrl url = new GenericUrl(requestUrl);
-        url.setRawPath(GoogleOAuth.REDIRECT_URI);
+        url.setRawPath(GoogleOAuthUtils.REDIRECT_URI);
         return url.build();
     }
 
@@ -67,10 +67,10 @@ public class GoogleOAuth {
      * @return Конечный URL для перенаправления на авторизацию через Google account.
      */
     public static String generateAuthorizeUrl(String requestUrl) {
-        return new BrowserClientRequestUrl(GoogleOAuth.URL + "/auth", GoogleOAuth.CLIENT_ID)
+        return new BrowserClientRequestUrl(GoogleOAuthUtils.URL + "/auth", GoogleOAuthUtils.CLIENT_ID)
                 .setResponseTypes(Arrays.asList("code"))
-                .setScopes(Arrays.asList(GoogleOAuth.SCOPES))
-                .setRedirectUri(GoogleOAuth.getRedirectUri(requestUrl)).build();
+                .setScopes(Arrays.asList(GoogleOAuthUtils.SCOPES))
+                .setRedirectUri(GoogleOAuthUtils.getRedirectUri(requestUrl)).build();
     }
 
     /**
@@ -101,10 +101,10 @@ public class GoogleOAuth {
                     new AuthorizationCodeTokenRequest(
                             new NetHttpTransport(),
                             new JacksonFactory(),
-                            new GenericUrl(GoogleOAuth.URL + "/token"),
+                            new GenericUrl(GoogleOAuthUtils.URL + "/token"),
                             code)
-                        .setClientAuthentication(new BasicAuthentication(GoogleOAuth.CLIENT_ID, GoogleOAuth.CLIENT_SECRET))
-                        .setRedirectUri(GoogleOAuth.getRedirectUri(requestUrl))
+                        .setClientAuthentication(new BasicAuthentication(GoogleOAuthUtils.CLIENT_ID, GoogleOAuthUtils.CLIENT_SECRET))
+                        .setRedirectUri(GoogleOAuthUtils.getRedirectUri(requestUrl))
                         .execute();
             return response.getAccessToken();
         } catch (TokenResponseException e) {

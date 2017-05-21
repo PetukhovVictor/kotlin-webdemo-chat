@@ -8,6 +8,15 @@ import java.util.List;
 
 public interface UserDAO {
     /**
+     * Проверка, существует ли пользователь.
+     *
+     * @param userId ID пользователя.
+     *
+     * @return Флаг, показывающий, существует ли пользователь с переданным ID.
+     */
+    boolean existUser(Integer userId);
+
+    /**
      * Получение текущего пользователя (по сессии).
      *
      * @param session Обьект сессии.

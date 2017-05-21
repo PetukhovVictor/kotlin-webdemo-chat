@@ -7,7 +7,9 @@ import com.jetbrains.dao.MessageDAOImpl;
 import com.jetbrains.dao.UserDAOImpl;
 import com.jetbrains.dto.DialogMessageDTO;
 import com.jetbrains.dto.UserDTO;
-import com.jetbrains.util.Url;
+import com.jetbrains.util.ResponseError;
+import com.jetbrains.util.UrlUtils;
+import com.jetbrains.web.errors.ResponseErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -36,22 +39,22 @@ public class MessageController {
             value = "/rest/dialog/messages",
             method = RequestMethod.POST,
             produces = { "application/json;charset=UTF-8" })
-    public String dialogMessages(HttpServletRequest request) throws JsonProcessingException {
-        Integer lastMessageId = Url.getIntegerParam(request, "lastMessageId");
-        Integer dialogId = Url.getIntegerParam(request, "dialogId");
+    public String dialogMessages(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
+        if (user == null) {
+            return new ResponseError(ResponseErrors.NOT_AUTHORIZED, response).toString();
+        }
+        Integer lastMessageId = UrlUtils.getIntegerParam(request, "lastMessageId");
+        Integer dialogId = UrlUtils.getIntegerParam(request, "dialogId");
         if (dialogId == null) {
-            return null;
+            return new ResponseError(ResponseErrors.INCORRECT_DIALOG_ID, response).toString();
         }
-        if (lastMessageId == null) {
-            lastMessageId = 0;
+        DialogDAOImpl dialogDao = new DialogDAOImpl();
+        if (!dialogDao.dialogExist(dialogId) || !dialogDao.dialogCheckAccess(dialogId, user.getId())) {
+            return new ResponseError(ResponseErrors.DIALOG_DOES_NOT_EXIST, response).toString();
         }
-        DialogDAOImpl dialogService = new DialogDAOImpl();
-        if (!dialogService.dialogExist(dialogId)) {
-            return null;
-        }
-        List<DialogMessageDTO> messages = new MessageDAOImpl().getMessages(dialogId, lastMessageId);
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(messages);
+        List<DialogMessageDTO> messages = new MessageDAOImpl().getMessages(dialogId, lastMessageId != null ? lastMessageId : 0);
+        return new ObjectMapper().writeValueAsString(messages);
     }
 
     /**
@@ -62,23 +65,25 @@ public class MessageController {
             value = "/rest/dialog/message/send",
             method = RequestMethod.POST,
             produces = { "application/json;charset=UTF-8" })
-    public String dialogMessageSend(HttpServletRequest request) throws JsonProcessingException {
-        String dialogIdString = request.getParameter("dialogId");
-        String message = request.getParameter("message");
+    public String dialogMessageSend(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
         UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
-        if (dialogIdString == null || message == null) {
-            return null;
+        if (user == null) {
+            return new ResponseError(ResponseErrors.NOT_AUTHORIZED, response).toString();
         }
-        Integer dialogId;
-        try {
-            dialogId = Integer.parseInt(dialogIdString);
-        } catch (NumberFormatException e) {
-            return null;
+        Integer dialogId = UrlUtils.getIntegerParam(request, "dialogId");
+        if (dialogId == null) {
+            return new ResponseError(ResponseErrors.DIALOG_NOT_SPECIFIED, response).toString();
+        }
+        String message = request.getParameter("message");
+        if (message == null) {
+            return new ResponseError(ResponseErrors.MESSAGE_NOT_SPECIFIED, response).toString();
+        }
+        DialogDAOImpl dialogDao = new DialogDAOImpl();
+        if (!dialogDao.dialogExist(dialogId) || !dialogDao.dialogCheckAccess(dialogId, user.getId())) {
+            return new ResponseError(ResponseErrors.DIALOG_DOES_NOT_EXIST, response).toString();
         }
         DialogMessageDTO newMessage = new MessageDAOImpl().addMessage(dialogId, user.getId(), message);
-
-        ObjectMapper mapper = new ObjectMapper();
         this.template.convertAndSend("/chat/" + dialogId, newMessage);
-        return mapper.writeValueAsString(newMessage);
+        return new ObjectMapper().writeValueAsString(newMessage);
     }
 }

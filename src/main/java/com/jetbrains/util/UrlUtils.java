@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Вспомогательный класс для работы с URL.
  */
-public class Url {
+public class UrlUtils {
     /**
      * Получение полного адреса URL по объекту HttpServletRequest.
      * Пример: http://localhost:8080/oauth2callback
