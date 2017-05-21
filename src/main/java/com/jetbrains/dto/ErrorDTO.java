@@ -1,9 +1,27 @@
 package com.jetbrains.dto;
 
+/**
+ * DTO-модель серверной ошибки. Отдается на клиент.
+ */
 public class ErrorDTO {
+    /**
+     * Поле статуса отдаваемого JSON-объекта.
+     */
     private String status = "ERROR";
+
+    /**
+     * Внутренний код ошибки.
+     */
     private Integer errorCode;
+
+    /**
+     * Внутреннее название ошибки.
+     */
     private String errorName;
+
+    /**
+     * Внутреннее описание ошибки.
+     */
     private String errorDescription;
 
     public Integer getErrorCode() {

@@ -72,7 +72,7 @@ public class MessageController {
         }
         Integer dialogId = UrlUtils.getIntegerParam(request, "dialogId");
         if (dialogId == null) {
-            return new ResponseError(ResponseErrors.DIALOG_NOT_SPECIFIED, response).toString();
+            return new ResponseError(ResponseErrors.INCORRECT_DIALOG_ID, response).toString();
         }
         String message = request.getParameter("message");
         if (message == null) {

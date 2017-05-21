@@ -12,11 +12,10 @@ public enum ResponseErrors {
     INCORRECT_INTERLOCUTOR_ID(2002, 400),
     INCORRECT_DIALOG_ID(2003, 400),
     DIALOG_DOES_NOT_EXIST(2004, 400),
-    MESSAGE_NOT_SPECIFIED(2005, 400),
-    DIALOG_NOT_SPECIFIED(2006, 400);
+    MESSAGE_NOT_SPECIFIED(2005, 400);
 
     /**
-     * Внутренний error-код ошибки.
+     * Внутренний код ошибки.
      */
     private final Integer errorCode;
 
