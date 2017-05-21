@@ -45,13 +45,7 @@ const webpackConfig = {
             }
         ]),
         new ExtractTextPlugin('./[name].css')
-    ],
-    devServer: {
-        contentBase: applicationConfig.static.path,
-        headers: {
-            "Access-Control-Allow-Origin": "http://localhost:8080"
-        }
-    }
+    ]
 };
 
 module.exports = webpackConfig;
