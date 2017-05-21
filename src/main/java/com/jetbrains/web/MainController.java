@@ -1,7 +1,7 @@
 package com.jetbrains.web;
 
-import com.jetbrains.domain.UserEntity;
-import com.jetbrains.dao.UserDAO;
+import com.jetbrains.dao.UserDAOImpl;
+import com.jetbrains.dto.UserDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -14,9 +14,8 @@ public class MainController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ModelAndView main(HttpServletRequest request) {
-        UserDAO user = new UserDAO();
-        UserEntity userInfo = user.getUserBySession(request.getSession());
-        user.signIn(user.getUserById(8), request.getSession());
+        UserDAOImpl user = new UserDAOImpl();
+        UserDTO userInfo = user.getCurrentUser(request.getSession());
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("content", "Kotlin web-demo chat");
         modelAndView.addObject("user", userInfo);

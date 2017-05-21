@@ -2,11 +2,12 @@ package com.jetbrains.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jetbrains.dao.DialogDAO;
+import com.jetbrains.dao.DialogDAOImpl;
+import com.jetbrains.dao.MessageDAOImpl;
 import com.jetbrains.domain.DialogMessageEntity;
 import com.jetbrains.domain.DialogEntity;
 import com.jetbrains.domain.UserEntity;
-import com.jetbrains.dao.UserDAO;
+import com.jetbrains.dao.UserDAOImpl;
 import com.jetbrains.dto.DialogDTO;
 import com.jetbrains.dto.DialogMessageDTO;
 import com.jetbrains.dto.UserDTO;
@@ -36,14 +37,9 @@ public class DialogController {
             method = RequestMethod.GET,
             produces = { "application/json;charset=UTF-8" })
     public String dialogs(HttpServletRequest request) throws JsonProcessingException {
-        Integer lastDialogId = Url.getIntegerParam(request, "lastDialogId");
-        if (lastDialogId == null) {
-            lastDialogId = 0;
-        }
-
         ObjectMapper mapper = new ObjectMapper();
-        UserEntity user = (new UserDAO()).getUserBySession(request.getSession());
-        List dialogs = (new DialogDAO()).getDialogs(user, lastDialogId);
+        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
+        List dialogs = new DialogDAOImpl().getDialogs(user.getId());
         return mapper.writeValueAsString(dialogs);
     }
 
@@ -56,8 +52,9 @@ public class DialogController {
         if (searchPhrase == null) {
             return null;
         }
+        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
+        List<UserDTO> users = new UserDAOImpl().searchUserByNameOrEmailWithExclude(searchPhrase, user.getId());
         ObjectMapper mapper = new ObjectMapper();
-        List<UserDTO> users = (new UserDAO()).search(searchPhrase);
         return mapper.writeValueAsString(users);
     }
 
@@ -74,12 +71,11 @@ public class DialogController {
         if (lastMessageId == null) {
             lastMessageId = 0;
         }
-        DialogDAO dialogService = new DialogDAO();
-        DialogEntity dialog = dialogService.getDialogById(dialogId);
-        if (dialog == null) {
+        DialogDAOImpl dialogService = new DialogDAOImpl();
+        if (!dialogService.dialogExist(dialogId)) {
             return null;
         }
-        List<DialogMessageDTO> messages = dialogService.getMessages(dialog, lastMessageId);
+        List<DialogMessageDTO> messages = new MessageDAOImpl().getMessages(dialogId, lastMessageId);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(messages);
     }
@@ -91,23 +87,21 @@ public class DialogController {
     public String dialogMessageSend(HttpServletRequest request) throws JsonProcessingException {
         String dialogIdString = request.getParameter("dialogId");
         String message = request.getParameter("message");
-        UserEntity user = (new UserDAO()).getUserBySession(request.getSession());
+        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
         if (dialogIdString == null || message == null) {
             return null;
         }
-        int dialogId;
+        Integer dialogId;
         try {
             dialogId = Integer.parseInt(dialogIdString);
         } catch (NumberFormatException e) {
             return null;
         }
-        DialogDAO dialogService = new DialogDAO();
-        DialogMessageEntity newMessage = dialogService.addMessage(dialogService.getDialogById(dialogId), user, message);
-        ObjectMapper mapper = new ObjectMapper();
+        DialogMessageDTO newMessage = new MessageDAOImpl().addMessage(dialogId, user.getId(), message);
 
-        DialogMessageDTO messageDTO = (new DialogDAO()).getMessageById(newMessage.getId());
-        this.template.convertAndSend("/messages/subscribe", messageDTO);
-        return mapper.writeValueAsString(messageDTO);
+        ObjectMapper mapper = new ObjectMapper();
+        this.template.convertAndSend("/chat/" + dialogId, newMessage);
+        return mapper.writeValueAsString(newMessage);
     }
 
     @RequestMapping(
@@ -121,21 +115,14 @@ public class DialogController {
         } catch (NumberFormatException e) {
             return null;
         }
-        UserDAO userDao = new UserDAO();
-        UserEntity user = userDao.getUserBySession(request.getSession());
-        DialogDAO dialogService = new DialogDAO();
+        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
+        DialogDAOImpl dialogService = new DialogDAOImpl();
 
-        DialogEntity dialogEntity = dialogService.getDialogByParticipants(userDao.getUserById(interlocutorId), user);
-        if (dialogEntity == null) {
-            dialogEntity = dialogService.createDialog(user.getId(), Math.abs(interlocutorId));
+        DialogDTO dialog = dialogService.getDialogByParticipants(interlocutorId, user.getId());
+        if (dialog == null) {
+            dialog = dialogService.createDialog(user.getId(), Math.abs(interlocutorId));
         }
         ObjectMapper mapper = new ObjectMapper();
-        DialogDTO dialog = dialogService.getDialogDTO(dialogEntity, user);
         return mapper.writeValueAsString(dialog);
-    }
-
-    @SendTo("/messages/subscribe")
-    private DialogMessageDTO dialogMessageReceive(DialogMessageDTO message) throws JsonProcessingException {
-        return message;
     }
 }

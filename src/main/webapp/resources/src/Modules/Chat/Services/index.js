@@ -9,7 +9,7 @@ const DIALOG_CREATE = "/rest/dialog/create";
 const DIALOG_MESSAGES_REST = "/rest/dialog/messages";
 const DIALOG_SEND_MESSAGE_REST = "/rest/dialog/message/send";
 const DIALOG_MESSAGES_ENDPOINT = "/message/send";
-const DIALOG_MESSAGES_SUBSCRIBE = "/messages/subscribe";
+const DIALOG_MESSAGES_SUBSCRIBE = "/chat";
 
 /**
  * Stomp-клиент для работы с веб-сокетами (используется для приёма сообщений).
@@ -169,8 +169,8 @@ export const ChatServices = {
         stompClient !== null && stompClient.disconnect();
         const socket = new SockJS(DIALOG_MESSAGES_ENDPOINT);
         stompClient = Stomp.over(socket);
-        stompClient.connect({ dialogId }, () => {
-            stompClient.subscribe(DIALOG_MESSAGES_SUBSCRIBE, response => {
+        stompClient.connect({}, () => {
+            stompClient.subscribe(`${DIALOG_MESSAGES_SUBSCRIBE}/${dialogId}`, response => {
                 const messageObj = JSON.parse(response.body);
                 callback(messageObj);
             });

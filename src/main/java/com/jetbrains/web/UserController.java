@@ -3,9 +3,9 @@ package com.jetbrains.web;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.services.oauth2.model.Userinfoplus;
-import com.jetbrains.domain.UserEntity;
-import com.jetbrains.dao.GoogleOAuth;
-import com.jetbrains.dao.UserDAO;
+import com.jetbrains.dto.UserDTO;
+import com.jetbrains.util.GoogleOAuth;
+import com.jetbrains.dao.UserDAOImpl;
 import com.jetbrains.util.Url;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,8 +36,8 @@ public class UserController {
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
-        UserDAO user = new UserDAO();
-        UserEntity userInfo = user.getUserBySession(session);
+        UserDAOImpl user = new UserDAOImpl();
+        UserDTO userInfo = user.getCurrentUser(session);
         if (userInfo == null) {
             response.sendRedirect("/");
             return;
@@ -60,7 +60,7 @@ public class UserController {
             return oAuthError();
         }
         Userinfoplus userInfo = GoogleOAuth.getUserInfo(token);
-        UserDAO user = new UserDAO();
+        UserDAOImpl user = new UserDAOImpl();
         user.sign(userInfo, request.getSession());
         response.sendRedirect("/");
         return null;
@@ -73,7 +73,7 @@ public class UserController {
             produces = { "application/json;charset=UTF-8" })
     public String userInfo(HttpServletRequest request) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        UserEntity user = (new UserDAO()).getUserBySession(request.getSession());
+        UserDTO user = new UserDAOImpl().getCurrentUser(request.getSession());
         return mapper.writeValueAsString(user);
     }
 }

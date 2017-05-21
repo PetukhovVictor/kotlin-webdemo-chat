@@ -3,7 +3,6 @@ package com.jetbrains.domain;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
-
 @Entity
 @Table(name = "dialog_participants", schema = "kotlin_webdemo", catalog = "")
 public class DialogParticipantEntity {

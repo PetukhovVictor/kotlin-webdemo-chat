@@ -1,4 +1,4 @@
-package com.jetbrains.dao;
+package com.jetbrains.util;
 
 import com.google.api.client.auth.oauth2.*;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
