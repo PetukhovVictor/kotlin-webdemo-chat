@@ -6,7 +6,7 @@ CREATE TABLE kotlin_webdemo.users
   name VARCHAR(255) NOT NULL,
   picture VARCHAR(255),
   gid VARCHAR(255) NOT NULL
-);
+) CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE UNIQUE INDEX users_email_uindex ON kotlin_webdemo.users (email);
 CREATE UNIQUE INDEX users_gid_uindex ON kotlin_webdemo.users (gid);
 
@@ -19,7 +19,8 @@ CREATE TABLE kotlin_webdemo.dialogs
   title VARCHAR(255),
   last_update_date DATETIME DEFAULT CURRENT_TIMESTAMP() NOT NULL,
   CONSTRAINT dialogs_users_id_fk FOREIGN KEY (owner_id) REFERENCES users (id)
-);
+) CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE INDEX dialogs_last_update_date_index ON kotlin_webdemo.dialogs (last_update_date DESC);
 
 /* Dialog participants table */
 CREATE TABLE kotlin_webdemo.dialog_participants
@@ -30,7 +31,7 @@ CREATE TABLE kotlin_webdemo.dialog_participants
   join_date DATETIME DEFAULT CURRENT_TIMESTAMP() NOT NULL,
   CONSTRAINT dialog_participants_dialogs_id_fk FOREIGN KEY (dialog_id) REFERENCES dialogs (id),
   CONSTRAINT dialog_participants_users_id_fk FOREIGN KEY (participant_id) REFERENCES users (id)
-);
+) CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Dialog messages table */
 CREATE TABLE kotlin_webdemo.dialog_messages
@@ -42,4 +43,5 @@ CREATE TABLE kotlin_webdemo.dialog_messages
   date DATETIME DEFAULT CURRENT_TIMESTAMP() NOT NULL,
   CONSTRAINT dialog_messages_dialogs_id_fk FOREIGN KEY (dialog_id) REFERENCES dialogs (id),
   CONSTRAINT dialog_messages_users_id_fk FOREIGN KEY (author_id) REFERENCES users (id)
-);
+) CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE INDEX dialog_messages_date_index ON kotlin_webdemo.dialog_messages (date DESC);
