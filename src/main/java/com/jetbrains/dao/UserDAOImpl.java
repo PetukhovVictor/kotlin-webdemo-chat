@@ -114,8 +114,6 @@ public class UserDAOImpl extends DAO implements UserDAO {
      * @return DTO-объект "Пользователь".
      */
     public UserDTO getCurrentUser(HttpSession session) {
-        this._signIn(this._getUserById(8), session);
-
         UserEntity user = (UserEntity) session.getAttribute("user");
         Criteria criteria = this.session.createCriteria(UserEntity.class)
                 .add(Restrictions.eq("id", user.getId()))

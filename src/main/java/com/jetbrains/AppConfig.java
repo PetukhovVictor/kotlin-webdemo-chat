@@ -12,7 +12,7 @@ public class AppConfig {
     /**
      * Путь к front-end ресурсам приложения.
      */
-    static final public String FRONTEND_PATH = "http://localhost:8081/assets/";
+    static final public String FRONTEND_PATH = "/resources/assets/";
 
     /**
      * Путь к файлу с описанием ошибок ответов.
