@@ -18,6 +18,4 @@ public class AppConfig {
      * Путь к файлу с описанием ошибок ответов.
      */
     static final public String RESPONSE_ERRORS_FILE = "responseErrors.json";
-
-
 }
