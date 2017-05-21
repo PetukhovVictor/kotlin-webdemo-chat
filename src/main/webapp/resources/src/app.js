@@ -7,11 +7,9 @@ require('Styles/app.less');
 require('Styles/login.less');
 
 window.addEventListener('load', () => {
-    const chatComponent = React.createElement(Chat);
-
     // Запуск рендеринга компонента чата.
     ReactDOM.render(
-        chatComponent,
+        React.createElement(Chat),
         document.getElementById('chat-container')
     );
 });
