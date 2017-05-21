@@ -3,6 +3,7 @@ import {findDOMNode} from 'react-dom';
 import {remove, reverse} from 'lodash';
 import classNames from 'classNames';
 import moment from 'moment';
+import nl2br from 'react-newline-to-break';
 
 import {ChatServices} from '../Services'
 
@@ -260,6 +261,7 @@ export const Dialog = React.createClass({
 
         const sendMessageInputElement = findDOMNode(this.refs['dialog-send-message-input']);
         sendMessageInputElement.value = '';
+        sendMessageInputElement.style.height = 'auto';
 
         this.setState({
             isMessageSending: true,
@@ -498,7 +500,7 @@ export const Dialog = React.createClass({
                     <img src={messageObj.authorPicture} alt="" />
                 </div>
                 <div className="dialog-message-text">
-                    <span>{messageObj.message}</span>
+                    <span>{nl2br(messageObj.message)}</span>
                     {footerContent}
                 </div>
             </div>

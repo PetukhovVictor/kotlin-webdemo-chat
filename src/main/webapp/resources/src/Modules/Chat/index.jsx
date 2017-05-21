@@ -328,7 +328,7 @@ export const Chat = React.createClass({
                 {this.renderUserInfo()}
                 <div className="dialogs">
                     {this.renderHeader()}
-                    {content}
+                    <div className="dialogs-list">{content}</div>
                 </div>
                 <Dialog
                     dialog={activeDialog}

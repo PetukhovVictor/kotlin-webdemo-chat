@@ -182,6 +182,6 @@ public class DialogDAOImpl extends DAO implements DialogDAO {
         dialog.setLastUpdateDate(currentDate);
         this.session.save(dialog);
         this.session.getTransaction().commit();
-        return this.getDialogById(dialog.getId());
+        return this.getDialogByIdAndInterlocutor(dialog.getId(), userId2);
     }
 }

@@ -115,6 +115,9 @@ public class UserDAOImpl extends DAO implements UserDAO {
      */
     public UserDTO getCurrentUser(HttpSession session) {
         UserEntity user = (UserEntity) session.getAttribute("user");
+        if (user == null) {
+            return null;
+        }
         Criteria criteria = this.session.createCriteria(UserEntity.class)
                 .add(Restrictions.eq("id", user.getId()))
                 .setProjection(UserDAOImpl.getUserProjections())
